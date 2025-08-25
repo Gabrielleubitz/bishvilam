@@ -888,7 +888,7 @@ function EventGroupSelector({ selectedGroups = ['ALL'], onChange }: {
           
           {selectedGroups.length === 0 && !isAllGroups && (
             <p className="text-sm text-red-400 mt-2">
-              ⚠️ נא לבחור לפחות קבוצה אחת או לסמן "כל הקבוצות"
+              ⚠️ נא לבחור לפחות קבוצה אחת או לסמן &quot;כל הקבוצות&quot;
             </p>
           )}
         </div>

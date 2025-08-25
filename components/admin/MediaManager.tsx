@@ -437,7 +437,7 @@ export default function MediaManager() {
         <div className="text-sm text-gray-300 space-y-1">
           <p>• <strong>רקע עמוד הבית:</strong> תמונת הרקע הראשית בעמוד הבית</p>
           <p>• <strong>לזכרם:</strong> תמונות של שלושת החללים בעמוד הזכרון</p>
-          <p>• <strong>גלריית תמונות:</strong> תמונות המוצגות בגלריה בעמוד "עלינו"</p>
+          <p>• <strong>גלריית תמונות:</strong> תמונות המוצגות בגלריה בעמוד &quot;עלינו&quot;</p>
           <p>• <strong>לוגו וניווט:</strong> הלוגו הראשי של האתר</p>
           <p>• <strong>תמונות אירועים:</strong> תמונות ברירת מחדל עבור אירועים</p>
         </div>

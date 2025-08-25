@@ -192,8 +192,8 @@ export default function MemorialPage() {
 
             <div className="bg-gray-800/50 backdrop-blur-sm border border-yellow-400/30 rounded-lg p-8">
               <blockquote className="text-xl text-gray-200 italic mb-6 leading-relaxed">
-                "הם נפלו בשדה הכבוד, אבל רוחם תמיד תלווה אותנו. 
-                בכל אימון, בכל אתגר, בכל הישג - הם איתנו."
+                &quot;הם נפלו בשדה הכבוד, אבל רוחם תמיד תלווה אותנו. 
+                בכל אימון, בכל אתגר, בכל הישג - הם איתנו.&quot;
               </blockquote>
               <div className="text-yellow-400 font-semibold">— צוות בשבילם</div>
             </div>

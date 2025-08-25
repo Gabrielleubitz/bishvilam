@@ -179,7 +179,7 @@ export default function SignUpPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-2">דוא"ל *</label>
+                <label className="block text-sm font-medium mb-2">דוא&quot;ל *</label>
                 <input
                   type="email"
                   name="email"

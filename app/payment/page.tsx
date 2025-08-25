@@ -570,7 +570,7 @@ export default function PaymentPage() {
                   </div>
                   <div className="border-t border-gray-700 pt-3">
                     <div className="flex justify-between text-lg font-bold">
-                      <span>סה"כ לתשלום:</span>
+                      <span>סה&quot;כ לתשלום:</span>
                       <span className="text-green-400">₪{totalAmount}</span>
                     </div>
                   </div>

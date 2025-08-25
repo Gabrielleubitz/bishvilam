@@ -161,7 +161,7 @@ export default function AboutPage() {
               <div className="bg-gray-900 border border-brand-green/30 px-8 py-4">
                 <div className="text-brand-green text-sm font-mono mb-2">[ MISSION STATEMENT ]</div>
                 <p className="text-gray-300 font-semibold max-w-2xl">
-                  "כל אימון הוא הזדמנות לגדול, כל אתגר הוא צעד קדימה לעבר המטרה"
+                  &quot;כל אימון הוא הזדמנות לגדול, כל אתגר הוא צעד קדימה לעבר המטרה&quot;
                 </p>
                 <div className="text-brand-green text-sm font-mono mt-2">[ END TRANSMISSION ]</div>
               </div>
@@ -216,7 +216,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>ביטוח צד ג' מקיף</span>
+                  <span>ביטוח צד ג&apos; מקיף</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
@@ -269,7 +269,7 @@ export default function AboutPage() {
               <h3 className="font-semibold mb-2">מה קורה במזג אוויר קשה?</h3>
               <p className="text-gray-300">
                 בגשם חזק או חום קיצוני האימון יועבר למקום מוגן או ידחה. 
-                כל המשתתפים יקבלו הודעה מראש ב-SMS ובדוא"ל.
+                כל המשתתפים יקבלו הודעה מראש ב-SMS ובדוא&quot;ל.
               </p>
             </div>
             
@@ -304,14 +304,14 @@ export default function AboutPage() {
               <h3 className="font-semibold mb-2">טלפון</h3>
               <p className="text-gray-300">
                 052-1234567<br />
-                זמין: א'-ה' 08:00-20:00<br />
+                זמין: א&apos;-ה&apos; 08:00-20:00<br />
                 שישי: 08:00-14:00
               </p>
             </div>
             
             <div className="card">
               <Mail className="mx-auto mb-4 text-brand-green" size={32} />
-              <h3 className="font-semibold mb-2">דוא"ל</h3>
+              <h3 className="font-semibold mb-2">דוא&quot;ל</h3>
               <p className="text-gray-300">
                 info@kosherkravi.co.il<br />
                 registrations@kosherkravi.co.il<br />

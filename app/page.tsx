@@ -96,7 +96,7 @@ export default function HomePage() {
             כושר קרבי, אימונים אישיים, ערכים של לוחם, פיתוח יכולות, וחוסן מנטלי לזכר:
           </p>
           <p className="text-lg font-bold mb-8 text-gray-300 max-w-2xl mx-auto">
-            • דותן שמעון ז"ל • נטע כהנא ז"ל • נווה לשם ז"ל
+            • דותן שמעון ז&quot;ל • נטע כהנא ז&quot;ל • נווה לשם ז&quot;ל
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/events" className="btn text-lg px-8 py-4">
