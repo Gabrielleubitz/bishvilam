@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isAdmin() { 
+      return isSignedIn() && 
+        exists(/databases/(default)/documents/profiles/$(request.auth.uid)) &&
+        get(/databases/(default)/documents/profiles/$(request.auth.uid)).data.role == "admin"; 
+    }
+
+    // Public files - anyone can read, admin can write
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Upload files - admin only
+    match /uploads/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // User files - users can read/write own files, admin can do all
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isAdmin();
+    }
+  }
+}

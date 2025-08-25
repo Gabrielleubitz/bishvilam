@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { 
+  height: 100%; 
+}
+
+a { 
+  color: #2E7D32; 
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.btn { 
+  @apply px-6 py-3 rounded-lg bg-brand-green text-white font-medium hover:bg-green-700 transition-colors duration-200;
+}
+
+.btn-outline {
+  @apply px-6 py-3 rounded-lg border-2 border-brand-green text-brand-green font-medium hover:bg-brand-green hover:text-white transition-colors duration-200;
+}
+
+.card { 
+  @apply bg-black/70 border border-brand-green/40 rounded-lg p-6 backdrop-blur-sm;
+}
+
+.input {
+  @apply w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:border-brand-green focus:ring-1 focus:ring-brand-green outline-none;
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #0B0B0B 0%, #1a1a1a 50%, #2E7D32 100%);
+}
+
+.section-container {
+  @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+}

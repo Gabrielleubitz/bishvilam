@@ -1,0 +1,44 @@
+{
+  "name": "kosher-kravi",
+  "private": true,
+  "scripts": {
+    "predev": "node scripts/clean-next-cache.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/clean-next-cache.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "@types/node": "20.14.12",
+    "@types/react": "18.2.66",
+    "@types/react-dom": "18.2.22",
+    "autoprefixer": "10.4.20",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "firebase": "10.12.2",
+    "firebase-admin": "12.5.0",
+    "lucide-react": "^0.446.0",
+    "next": "^14.2.18",
+    "node-mailjet": "^6.0.9",
+    "postcss": "8.4.41",
+    "qrcode": "1.5.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.53.0",
+    "stripe": "^18.4.0",
+    "tailwindcss": "3.4.10",
+    "twilio": "^5.8.0",
+    "typescript": "5.5.4",
+    "zod": "^3.23.8"
+  },
+  "overrides": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.14"
+  }
+}
