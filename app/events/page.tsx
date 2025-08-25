@@ -240,7 +240,7 @@ export default function EventsPage() {
       const userRegistrations = userRegistrationsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as any[];
 
       console.log('📋 User registrations found:', userRegistrations);
 
@@ -249,15 +249,15 @@ export default function EventsPage() {
       const allRegistrations = allRegistrationsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as any[];
 
       // Update events with registration status
       const eventsWithRegistration = events.map(event => {
-        const isRegistered = userRegistrations.some(reg => 
+        const isRegistered = userRegistrations.some((reg: any) => 
           reg.eventId === event.id && reg.status !== 'cancelled'
         );
         
-        const registrationCount = allRegistrations.filter(reg => 
+        const registrationCount = allRegistrations.filter((reg: any) => 
           reg.eventId === event.id && reg.status !== 'cancelled'
         ).length;
 
@@ -316,7 +316,7 @@ export default function EventsPage() {
 
   const getUniqueLocations = () => {
     const locations = events.map(event => event.locationName);
-    return [...new Set(locations)];
+    return Array.from(new Set(locations));
   };
 
   if (loading) {

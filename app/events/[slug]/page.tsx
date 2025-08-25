@@ -139,9 +139,9 @@ export default function EventDetailPage() {
       const existingRegistrations = registrationsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as any[];
 
-      const activeRegistration = existingRegistrations.find(reg => reg.status !== 'cancelled');
+      const activeRegistration = existingRegistrations.find((reg: any) => reg.status !== 'cancelled');
       const registered = !!activeRegistration;
 
       console.log('✅ Registration status:', registered ? 'REGISTERED' : 'NOT REGISTERED');
@@ -171,10 +171,10 @@ export default function EventDetailPage() {
       const allRegistrations = registrationsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as any[];
 
       // Count active registrations (not cancelled)
-      const activeCount = allRegistrations.filter(reg => reg.status !== 'cancelled').length;
+      const activeCount = allRegistrations.filter((reg: any) => reg.status !== 'cancelled').length;
       console.log('📊 Registration count for', event.title, ':', activeCount);
       setRegistrationCount(activeCount);
       

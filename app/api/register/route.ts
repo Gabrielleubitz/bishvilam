@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       try {
         const stripe = await import('stripe');
         const stripeInstance = new stripe.default(process.env.STRIPE_SECRET_KEY, {
-          apiVersion: '2024-06-20'
+          apiVersion: '2025-07-30.basil'
         });
         
         const paymentIntent = await stripeInstance.paymentIntents.create({

@@ -133,7 +133,7 @@ export default function TrainerPage() {
         const registrations: (Registration & { userProfile?: UserProfile })[] = [];
 
         for (const regDoc of registrationsSnapshot.docs) {
-          const regData = { id: regDoc.id, ...regDoc.data() } as Registration;
+          const regData = { id: regDoc.id, ...regDoc.data() } as any;
           
           // Skip cancelled registrations
           if (regData.status === 'cancelled') {
@@ -376,20 +376,20 @@ export default function TrainerPage() {
                             <h4 className="font-semibold">
                               {registration.userProfile
                                 ? `${registration.userProfile.firstName} ${registration.userProfile.lastName}`
-                                : registration.userName || registration.userEmail || 'משתתף לא זמין'
+                                : (registration as any).userName || (registration as any).userEmail || 'משתתף לא זמין'
                               }
                             </h4>
                             <div className="flex items-center gap-4 text-sm text-gray-400">
-                              {(registration.userProfile?.phone || registration.userPhone) && (
+                              {(registration.userProfile?.phone || (registration as any).userPhone) && (
                                 <div className="flex items-center gap-1">
                                   <Phone size={14} />
-                                  <span>{registration.userProfile?.phone || registration.userPhone}</span>
+                                  <span>{registration.userProfile?.phone || (registration as any).userPhone}</span>
                                 </div>
                               )}
-                              {(registration.userProfile?.email || registration.userEmail) && (
+                              {(registration.userProfile?.email || (registration as any).userEmail) && (
                                 <div className="flex items-center gap-1">
                                   <span>📧</span>
-                                  <span>{registration.userProfile?.email || registration.userEmail}</span>
+                                  <span>{registration.userProfile?.email || (registration as any).userEmail}</span>
                                 </div>
                               )}
                               {registration.checkedIn && registration.checkedInAt && (

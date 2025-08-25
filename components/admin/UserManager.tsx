@@ -46,7 +46,7 @@ export default function UserManager() {
       const usersData = usersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as UserProfile[];
+      })) as any[];
       
       setUsers(usersData);
     } catch (error) {
@@ -147,7 +147,7 @@ export default function UserManager() {
         } else {
           // Add mode - merge with existing groups
           const existingGroups = user.groups || [];
-          finalGroups = [...new Set([...existingGroups, ...newGroups])];
+          finalGroups = Array.from(new Set([...existingGroups, ...newGroups]));
         }
 
         await updateDoc(doc(db, 'profiles', userId), {
@@ -361,7 +361,7 @@ export default function UserManager() {
                     {user.createdAt && (
                       <div className="flex items-center gap-2">
                         <Calendar size={14} />
-                        <span>נרשם: {new Date(user.createdAt.toDate ? user.createdAt.toDate() : user.createdAt).toLocaleDateString('he-IL')}</span>
+                        <span>נרשם: {new Date((user as any).createdAt?.toDate ? (user as any).createdAt.toDate() : (user as any).createdAt).toLocaleDateString('he-IL')}</span>
                       </div>
                     )}
                   </div>

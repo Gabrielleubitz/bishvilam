@@ -119,7 +119,7 @@ export default function PaymentPage() {
         return;
       }
 
-      const registrationData = { id: registrationDoc.id, ...registrationDoc.data() };
+      const registrationData = { id: registrationDoc.id, ...registrationDoc.data() } as any;
       
       // Verify user owns this registration
       if (currentUser && registrationData.userId !== currentUser.uid) {
