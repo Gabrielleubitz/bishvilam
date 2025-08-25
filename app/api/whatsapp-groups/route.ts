@@ -1,11 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase.client';
 
-export async function GET(request: Request) {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userGroups = searchParams.get('groups')?.split(',').filter(g => g.trim()) || [];
+    const userGroups = request.nextUrl.searchParams.get('groups')?.split(',').filter(g => g.trim()) || [];
     
     console.log('Fetching WhatsApp groups for user groups:', userGroups);
     
