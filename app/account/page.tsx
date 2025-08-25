@@ -186,7 +186,7 @@ export default function UserDashboard() {
   };
 
   const getStatusText = (registration: UserRegistration) => {
-    const statusMap = {
+    const statusMap: Record<string, string> = {
       'confirmed': 'מאושר',
       'pending': 'ממתין',
       'cancelled': 'מבוטל'
@@ -195,7 +195,7 @@ export default function UserDashboard() {
   };
 
   const getPaymentStatusText = (paymentStatus: string) => {
-    const statusMap = {
+    const statusMap: Record<string, string> = {
       'paid': 'שולם',
       'pending': 'ממתין לתשלום', 
       'free': 'חינם'

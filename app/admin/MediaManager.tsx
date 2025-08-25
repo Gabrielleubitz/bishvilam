@@ -84,7 +84,7 @@ export default function MediaManager() {
         return;
       }
       
-      const img = new Image();
+      const img = new (window as any).Image();
       img.onload = () => resolve(true);
       img.onerror = () => resolve(false);
       img.src = url;
