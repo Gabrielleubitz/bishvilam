@@ -51,6 +51,13 @@ export default function EventDetailPage() {
     }
   }, [event?.id, currentUser?.uid]);
 
+  // Show WhatsApp links for registered users with groups
+  useEffect(() => {
+    if (isRegistered && userProfile?.groups && userProfile.groups.length > 0) {
+      setShowWhatsAppLinks(true);
+    }
+  }, [isRegistered, userProfile?.groups]);
+
   useEffect(() => {
     if (event) {
       loadRegistrationCount();
@@ -489,6 +496,16 @@ export default function EventDetailPage() {
                       <span className="font-semibold">כבר נרשמת!</span>
                     </div>
                     <p className="text-sm text-green-200">רשום בהצלחה לאירוע זה. פרטים נוספים נישלחו למייל.</p>
+                    
+                    {/* WhatsApp Group Links within registration status */}
+                    {userProfile?.groups && userProfile.groups.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-green-500/20">
+                        <WhatsAppGroupLinks
+                          userGroups={userProfile.groups}
+                          onClose={() => {}} // Don't allow closing in this context
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 

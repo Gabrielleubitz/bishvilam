@@ -79,22 +79,20 @@ export default function EventsPage() {
       let eventsData: EventWithRegistration[] = [];
       
       if (shouldFilterByGroups) {
-        // For students with groups - use group-based filtering
+        // For students with groups - use client-side filtering approach for better reliability
         const visibleKeys = getVisibleKeys(userProfile.groups);
         console.log('🔑 Visible keys for user:', visibleKeys);
         
-        try {
-          const eventsQuery = query(
-            collection(db, 'events'),
-            where('publish', '==', true),
-            where('groups', 'array-contains-any', visibleKeys),
-            orderBy('date', 'asc')
-          );
-          
-          const eventsSnapshot = await getDocs(eventsQuery);
-          eventsData = eventsSnapshot.docs.map(doc => {
+        // Always use simple query and filter client-side for more reliable results
+        const eventsQuery = query(
+          collection(db, 'events'),
+          where('publish', '==', true)
+        );
+        
+        const eventsSnapshot = await getDocs(eventsQuery);
+        eventsData = eventsSnapshot.docs
+          .map(doc => {
             const data = doc.data();
-            console.log(`✅ Group-filtered event found: "${data.title}" for groups:`, data.groups);
             return {
               id: doc.id,
               title: data.title,
@@ -107,49 +105,22 @@ export default function EventsPage() {
               priceNis: data.price,
               cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
               publish: data.publish,
+              groups: data.groups || ['ALL'],
               createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
               isRegistered: false,
               registrationCount: 0
             } as EventWithRegistration;
-          });
-        } catch (queryError) {
-          console.error('❌ Group-based query failed:', queryError);
-          console.log('🔄 Falling back to simple query...');
-          
-          // Fallback to simple query and filter client-side
-          const simpleQuery = query(
-            collection(db, 'events'),
-            where('publish', '==', true)
-          );
-          
-          const simpleSnapshot = await getDocs(simpleQuery);
-          eventsData = simpleSnapshot.docs
-            .map(doc => {
-              const data = doc.data();
-              return {
-                id: doc.id,
-                title: data.title,
-                slug: (data.title || 'event').replace(/\s+/g, '-').toLowerCase(),
-                description: data.description,
-                startAt: new Date(data.date),
-                endAt: new Date(data.date),
-                locationName: data.location,
-                capacity: data.maxParticipants,
-                priceNis: data.price,
-                cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
-                publish: data.publish,
-                groups: data.groups || ['ALL'],
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
-                isRegistered: false,
-                registrationCount: 0
-              } as EventWithRegistration;
-            })
-            .filter(event => {
-              const eventGroups = event.groups || ['ALL'];
-              return eventGroups.includes('ALL') || eventGroups.some(group => visibleKeys.includes(group));
-            })
-            .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
-        }
+          })
+          .filter(event => {
+            const eventGroups = event.groups || ['ALL'];
+            console.log(`🔍 Event "${event.title}" groups:`, eventGroups, 'User visible keys:', visibleKeys);
+            const canSee = eventGroups.includes('ALL') || eventGroups.some(group => visibleKeys.includes(group));
+            console.log(`👁️ Can user see "${event.title}":`, canSee);
+            return canSee;
+          })
+          .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
+        
+        console.log(`📊 Final filtered events for user: ${eventsData.length} events`);
       } else {
         // For non-students (admins/trainers) or unauthenticated users - show all published events
         try {
