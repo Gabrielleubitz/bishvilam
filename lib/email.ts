@@ -14,32 +14,47 @@ function getMailjetClient() {
   return mailjet;
 }
 
-// Get admin emails from environment or database
+// Get admin emails from database (prioritize) or environment fallback
 async function getAdminEmails(): Promise<string[]> {
-  // Try environment variable first
-  const envEmails = process.env.ADMIN_EMAILS;
-  if (envEmails) {
-    return envEmails.split(',').map(email => email.trim()).filter(Boolean);
-  }
-
-  // Fallback to querying admin users from database
+  console.log('🔍 Fetching admin emails from Firebase...');
+  
+  // Primary: Query Firebase for admin users
   try {
     const adminQuery = adminDb.collection('profiles').where('role', '==', 'admin');
     const adminSnapshot = await adminQuery.get();
     const adminEmails: string[] = [];
     
+    console.log(`📊 Found ${adminSnapshot.docs.length} admin profile(s) in database`);
+    
     adminSnapshot.docs.forEach(doc => {
       const data = doc.data();
+      console.log(`👤 Admin profile: ${data.email} (${data.firstName} ${data.lastName})`);
       if (data.email) {
         adminEmails.push(data.email);
       }
     });
     
-    return adminEmails;
+    if (adminEmails.length > 0) {
+      console.log('✅ Using admin emails from Firebase:', adminEmails);
+      return adminEmails;
+    }
+    
+    console.log('⚠️ No admin emails found in Firebase, checking environment fallback...');
   } catch (error) {
-    console.error('Error fetching admin emails:', error);
-    return [];
+    console.error('❌ Error fetching admin emails from Firebase:', error);
+    console.log('⚠️ Falling back to environment variables...');
   }
+
+  // Fallback: Environment variable
+  const envEmails = process.env.ADMIN_EMAILS;
+  if (envEmails) {
+    const emails = envEmails.split(',').map(email => email.trim()).filter(Boolean);
+    console.log('📧 Using admin emails from environment:', emails);
+    return emails;
+  }
+  
+  console.error('❌ No admin emails found in Firebase or environment variables!');
+  return [];
 }
 
 export interface EmailTemplate {

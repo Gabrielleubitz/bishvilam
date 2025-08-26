@@ -8,6 +8,10 @@ export default function EmailTester() {
   const [testType, setTestType] = useState<'basic' | 'welcome' | 'registration'>('basic');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [adminInfo, setAdminInfo] = useState<any>(null);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [settingAdmin, setSettingAdmin] = useState(false);
 
   const handleTest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +83,58 @@ export default function EmailTester() {
     }
   };
 
+  const checkAdmins = async () => {
+    setLoadingAdmins(true);
+    try {
+      const response = await fetch('/api/admin/check-admins');
+      const data = await response.json();
+      setAdminInfo(data);
+    } catch (error) {
+      console.error('Error checking admins:', error);
+      setAdminInfo({ success: false, error: 'Failed to check admin users' });
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  const setAdminRole = async (makeAdmin: boolean) => {
+    if (!adminEmail) {
+      setResult({ success: false, message: 'נא הזן אימייל' });
+      return;
+    }
+
+    setSettingAdmin(true);
+    try {
+      const response = await fetch('/api/admin/set-admin-role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: adminEmail,
+          makeAdmin
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setResult({ success: true, message: data.message });
+        // Refresh admin info
+        checkAdmins();
+      } else {
+        setResult({ success: false, message: data.error });
+      }
+    } catch (error) {
+      setResult({
+        success: false,
+        message: 'שגיאה בעדכון הרשאות: ' + (error as any).message
+      });
+    } finally {
+      setSettingAdmin(false);
+    }
+  };
+
   return (
     <div className="card">
       <div className="flex items-center gap-3 mb-4">
@@ -146,19 +202,104 @@ export default function EmailTester() {
         </div>
       )}
 
-      <div className="mt-6 p-4 bg-gray-800/50 rounded">
-        <h4 className="font-medium mb-2">מידע על התצורה:</h4>
-        <div className="text-sm space-y-1">
-          <p>
-            <span className="text-gray-400">Mailjet API Key:</span>{' '}
-            {process.env.NEXT_PUBLIC_MAILJET_CONFIGURED ? 
-              <span className="text-green-400">✅ מוגדר</span> : 
-              <span className="text-red-400">❌ לא מוגדר</span>
-            }
-          </p>
-          <p className="text-xs text-gray-500">
-            לאחר הגדרת המפתחות ב-.env.local, אתחל את השרת לכדי שהשינויים ייכנסו לתוקף
-          </p>
+      <div className="mt-6 space-y-4">
+        <div className="p-4 bg-gray-800/50 rounded">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-medium">מידע על מנהלים במערכת:</h4>
+            <button
+              onClick={checkAdmins}
+              disabled={loadingAdmins}
+              className="btn-outline text-sm px-3 py-1"
+            >
+              {loadingAdmins ? 'בודק...' : 'בדוק מנהלים'}
+            </button>
+          </div>
+          
+          {adminInfo && (
+            <div className="text-sm space-y-2">
+              {adminInfo.success ? (
+                <>
+                  <p>
+                    <span className="text-gray-400">סה&quot;כ פרופילים:</span>{' '}
+                    <span className="text-white">{adminInfo.data.totalProfiles}</span>
+                  </p>
+                  <p>
+                    <span className="text-gray-400">סה&quot;כ מנהלים:</span>{' '}
+                    <span className={`font-medium ${adminInfo.data.totalAdmins > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {adminInfo.data.totalAdmins}
+                    </span>
+                  </p>
+                  {adminInfo.data.totalAdmins > 0 && (
+                    <div>
+                      <span className="text-gray-400">אימיילי מנהלים:</span>
+                      <div className="mt-1 space-y-1">
+                        {adminInfo.data.adminProfiles.map((admin: any, index: number) => (
+                          <div key={index} className="text-xs bg-gray-700/50 rounded px-2 py-1">
+                            <span className="text-green-300">{admin.email}</span>
+                            {admin.firstName && (
+                              <span className="text-gray-400 mr-2">({admin.firstName} {admin.lastName})</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-red-400">❌ {adminInfo.error}</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 bg-gray-800/50 rounded">
+          <h4 className="font-medium mb-3">ניהול הרשאות מנהל:</h4>
+          <div className="space-y-3">
+            <div>
+              <input
+                type="email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="אימייל המשתמש"
+                className="input text-sm"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setAdminRole(true)}
+                disabled={settingAdmin || !adminEmail}
+                className="btn text-sm px-3 py-1 bg-green-600 hover:bg-green-700"
+              >
+                {settingAdmin ? 'מעדכן...' : 'הפוך למנהל'}
+              </button>
+              <button
+                onClick={() => setAdminRole(false)}
+                disabled={settingAdmin || !adminEmail}
+                className="btn-outline text-sm px-3 py-1"
+              >
+                הסר הרשאות מנהל
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              השתמש בכלי זה כדי להפוך משתמשים למנהלים ולהתחיל לקבל התראות מייל
+            </p>
+          </div>
+        </div>
+
+        <div className="p-4 bg-gray-800/50 rounded">
+          <h4 className="font-medium mb-2">מידע על התצורה:</h4>
+          <div className="text-sm space-y-1">
+            <p>
+              <span className="text-gray-400">Mailjet API Key:</span>{' '}
+              {process.env.NEXT_PUBLIC_MAILJET_CONFIGURED ? 
+                <span className="text-green-400">✅ מוגדר</span> : 
+                <span className="text-red-400">❌ לא מוגדר</span>
+              }
+            </p>
+            <p className="text-xs text-gray-500">
+              המערכת תחפש מנהלים ב-Firebase לפי role=&quot;admin&quot; ותשלח להם התראות
+            </p>
+          </div>
         </div>
       </div>
     </div>
