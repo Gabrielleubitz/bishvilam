@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase.client';
 import Navbar from '@/components/Navbar';
@@ -51,6 +51,15 @@ export default function UserDashboard() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'events' | 'announcements' | 'profile'>('events');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    emergency: '',
+    dob: ''
+  });
+  const [saveLoading, setSaveLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -217,6 +226,60 @@ export default function UserDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditProfile = () => {
+    // Initialize form with current profile data
+    setEditForm({
+      firstName: userProfile?.firstName || '',
+      lastName: userProfile?.lastName || '',
+      phone: userProfile?.phone || '',
+      emergency: userProfile?.emergency || '',
+      dob: userProfile?.dob || ''
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!currentUser || !userProfile) return;
+
+    setSaveLoading(true);
+    try {
+      const profileRef = doc(db, 'profiles', userProfile.id);
+      await updateDoc(profileRef, {
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        phone: editForm.phone,
+        emergency: editForm.emergency,
+        dob: editForm.dob,
+        updatedAt: new Date()
+      });
+
+      // Update local state
+      setUserProfile({
+        ...userProfile,
+        ...editForm
+      });
+
+      setIsEditing(false);
+      alert('הפרטים עודכנו בהצלחה! ✅');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('שגיאה בעדכון הפרטים: ' + (error as any).message);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({
+      firstName: '',
+      lastName: '',
+      phone: '',
+      emergency: '',
+      dob: ''
+    });
   };
 
   const getStatusIcon = (registration: UserRegistration) => {
@@ -539,35 +602,131 @@ export default function UserDashboard() {
                 {/* Profile Info */}
                 <div className="card">
                   <h3 className="text-lg font-semibold mb-4">פרטים אישיים</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm text-gray-400">אימייל</label>
-                      <p className="font-medium">{currentUser.email}</p>
+                  {isEditing ? (
+                    /* Edit Form */
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm text-gray-400 mb-1">שם פרטי</label>
+                        <input
+                          type="text"
+                          value={editForm.firstName}
+                          onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                          className="input w-full"
+                          placeholder="הכנס שם פרטי"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm text-gray-400 mb-1">שם משפחה</label>
+                        <input
+                          type="text"
+                          value={editForm.lastName}
+                          onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                          className="input w-full"
+                          placeholder="הכנס שם משפחה"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm text-gray-400 mb-1">טלפון</label>
+                        <input
+                          type="tel"
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                          className="input w-full"
+                          placeholder="הכנס מספר טלפון"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm text-gray-400 mb-1">איש קשר חירום</label>
+                        <input
+                          type="tel"
+                          value={editForm.emergency}
+                          onChange={(e) => setEditForm({...editForm, emergency: e.target.value})}
+                          className="input w-full"
+                          placeholder="מספר טלפון לחירום"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm text-gray-400 mb-1">תאריך לידה</label>
+                        <input
+                          type="date"
+                          value={editForm.dob}
+                          onChange={(e) => setEditForm({...editForm, dob: e.target.value})}
+                          className="input w-full"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-3 mt-6">
+                        <button
+                          onClick={handleSaveProfile}
+                          disabled={saveLoading}
+                          className="btn flex-1"
+                        >
+                          {saveLoading ? 'שומר...' : 'שמירת שינויים'}
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          disabled={saveLoading}
+                          className="btn-outline flex-1"
+                        >
+                          ביטול
+                        </button>
+                      </div>
                     </div>
-                    {userProfile?.firstName && (
-                      <div>
-                        <label className="text-sm text-gray-400">שם פרטי</label>
-                        <p className="font-medium">{userProfile.firstName}</p>
+                  ) : (
+                    /* Display Mode */
+                    <>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm text-gray-400">אימייל</label>
+                          <p className="font-medium">{currentUser?.email || 'לא זמין'}</p>
+                        </div>
+                        {userProfile?.firstName && (
+                          <div>
+                            <label className="text-sm text-gray-400">שם פרטי</label>
+                            <p className="font-medium">{userProfile.firstName}</p>
+                          </div>
+                        )}
+                        {userProfile?.lastName && (
+                          <div>
+                            <label className="text-sm text-gray-400">שם משפחה</label>
+                            <p className="font-medium">{userProfile.lastName}</p>
+                          </div>
+                        )}
+                        {userProfile?.phone && (
+                          <div>
+                            <label className="text-sm text-gray-400">טלפון</label>
+                            <p className="font-medium">{userProfile.phone}</p>
+                          </div>
+                        )}
+                        {userProfile?.emergency && (
+                          <div>
+                            <label className="text-sm text-gray-400">איש קשר חירום</label>
+                            <p className="font-medium">{userProfile.emergency}</p>
+                          </div>
+                        )}
+                        {userProfile?.dob && (
+                          <div>
+                            <label className="text-sm text-gray-400">תאריך לידה</label>
+                            <p className="font-medium">
+                              {new Date(userProfile.dob).toLocaleDateString('he-IL')}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {userProfile?.lastName && (
-                      <div>
-                        <label className="text-sm text-gray-400">שם משפחה</label>
-                        <p className="font-medium">{userProfile.lastName}</p>
-                      </div>
-                    )}
-                    {userProfile?.phone && (
-                      <div>
-                        <label className="text-sm text-gray-400">טלפון</label>
-                        <p className="font-medium">{userProfile.phone}</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <button className="btn-outline w-full mt-4">
-                    <Settings size={16} className="ml-2" />
-                    עריכת פרופיל
-                  </button>
+                      
+                      <button 
+                        onClick={handleEditProfile}
+                        className="btn-outline w-full mt-6"
+                      >
+                        <Settings size={16} className="ml-2" />
+                        עריכת פרופיל
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* Account Actions */}
@@ -578,11 +737,6 @@ export default function UserDashboard() {
                       <Calendar size={16} className="ml-2" />
                       עיין באירועים חדשים
                     </Link>
-                    
-                    <button className="btn-outline w-full flex items-center justify-center">
-                      <Bell size={16} className="ml-2" />
-                      הגדרות התראות
-                    </button>
                     
                     <button 
                       onClick={() => auth.signOut()}
