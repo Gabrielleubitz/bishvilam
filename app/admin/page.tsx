@@ -9,7 +9,8 @@ import UserManager from '@/components/admin/UserManager';
 import MediaManager from '@/components/admin/MediaManager';
 import TrainerManager from '@/components/admin/TrainerManager';
 import WhatsAppGroupManager from '@/components/admin/WhatsAppGroupManager';
-import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle } from 'lucide-react';
+import EmailTester from '@/components/admin/EmailTester';
+import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
     { id: 'users', label: 'ניהול משתמשים', icon: Users },
     { id: 'trainers', label: 'ניהול מדריכים', icon: UserCheck },
     { id: 'whatsapp', label: 'קישורי ווטסאפ', icon: MessageCircle },
+    { id: 'email', label: 'מערכת מייל', icon: Mail },
     { id: 'media', label: 'ניהול מדיה', icon: Image }
   ];
 
@@ -58,6 +60,7 @@ export default function AdminDashboard() {
           {activeTab === 'users' && <UserManager />}
           {activeTab === 'trainers' && <TrainerManager />}
           {activeTab === 'whatsapp' && <WhatsAppGroupManager />}
+          {activeTab === 'email' && <EmailTester />}
           {activeTab === 'media' && <MediaManager />}
         </div>
       </div>

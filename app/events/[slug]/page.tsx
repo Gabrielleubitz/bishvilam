@@ -225,6 +225,32 @@ export default function EventDetailPage() {
 
       await addDoc(collection(db, 'registrations'), registrationData);
       
+      // Send registration confirmation email
+      try {
+        const emailResponse = await fetch('/api/send-registration-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userEmail: currentUser.email,
+            userName: registrationData.userName,
+            eventTitle: event.title,
+            eventDate: event.startAt.toISOString(),
+            eventLocation: event.locationName,
+          }),
+        });
+
+        if (emailResponse.ok) {
+          console.log('✅ Registration email sent successfully');
+        } else {
+          console.warn('⚠️ Registration email failed, but registration completed');
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending registration email:', emailError);
+        // Don't fail the registration if email fails
+      }
+      
       // Immediately update UI
       setIsRegistered(true);
       setRegistrationCount(prev => prev + 1);
