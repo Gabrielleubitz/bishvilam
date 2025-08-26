@@ -105,6 +105,7 @@ export default function EventsPage() {
               priceNis: data.price,
               cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
               publish: data.publish,
+              status: data.status || 'active', // Default to active for backwards compatibility
               groups: data.groups || ['ALL'],
               createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
               isRegistered: false,
@@ -112,6 +113,12 @@ export default function EventsPage() {
             } as EventWithRegistration;
           })
           .filter(event => {
+            // Only show active events to public
+            if (event.status && event.status !== 'active') {
+              console.log(`🚫 Event "${event.title}" is ${event.status}, hiding from public`);
+              return false;
+            }
+            
             const eventGroups = event.groups || ['ALL'];
             console.log(`🔍 Event "${event.title}" groups:`, eventGroups, 'User visible keys:', visibleKeys);
             const canSee = eventGroups.includes('ALL') || eventGroups.some(group => visibleKeys.includes(group));
@@ -131,26 +138,36 @@ export default function EventsPage() {
           );
           
           const eventsSnapshot = await getDocs(eventsQuery);
-          eventsData = eventsSnapshot.docs.map(doc => {
-            const data = doc.data();
-            console.log(`✅ Published event found: "${data.title}"`);
-            return {
-              id: doc.id,
-              title: data.title,
-              slug: (data.title || 'event').replace(/\s+/g, '-').toLowerCase(),
-              description: data.description,
-              startAt: new Date(data.date),
-              endAt: new Date(data.date),
-              locationName: data.location,
-              capacity: data.maxParticipants,
-              priceNis: data.price,
-              cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
-              publish: data.publish,
-              createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
-              isRegistered: false,
-              registrationCount: 0
-            } as EventWithRegistration;
-          });
+          eventsData = eventsSnapshot.docs
+            .map(doc => {
+              const data = doc.data();
+              console.log(`✅ Published event found: "${data.title}"`);
+              return {
+                id: doc.id,
+                title: data.title,
+                slug: (data.title || 'event').replace(/\s+/g, '-').toLowerCase(),
+                description: data.description,
+                startAt: new Date(data.date),
+                endAt: new Date(data.date),
+                locationName: data.location,
+                capacity: data.maxParticipants,
+                priceNis: data.price,
+                cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
+                publish: data.publish,
+                status: data.status || 'active', // Default to active for backwards compatibility
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+                isRegistered: false,
+                registrationCount: 0
+              } as EventWithRegistration;
+            })
+            .filter(event => {
+              // Only show active events to public
+              if (event.status && event.status !== 'active') {
+                console.log(`🚫 Event "${event.title}" is ${event.status}, hiding from public`);
+                return false;
+              }
+              return true;
+            });
         } catch (queryError) {
           console.error('❌ Query with orderBy failed:', queryError);
           console.log('🔄 Trying without orderBy...');
@@ -162,26 +179,37 @@ export default function EventsPage() {
           );
           
           const simpleSnapshot = await getDocs(simpleQuery);
-          eventsData = simpleSnapshot.docs.map(doc => {
-            const data = doc.data();
-            console.log(`✅ Published event found (simple query): "${data.title}"`);
-            return {
-              id: doc.id,
-              title: data.title,
-              slug: (data.title || 'event').replace(/\s+/g, '-').toLowerCase(),
-              description: data.description,
-              startAt: new Date(data.date),
-              endAt: new Date(data.date),
-              locationName: data.location,
-              capacity: data.maxParticipants,
-              priceNis: data.price,
-              cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
-              publish: data.publish,
-              createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
-              isRegistered: false,
-              registrationCount: 0
-            } as EventWithRegistration;
-          }).sort((a, b) => a.startAt.getTime() - b.startAt.getTime()); // Sort manually
+          eventsData = simpleSnapshot.docs
+            .map(doc => {
+              const data = doc.data();
+              console.log(`✅ Published event found (simple query): "${data.title}"`);
+              return {
+                id: doc.id,
+                title: data.title,
+                slug: (data.title || 'event').replace(/\s+/g, '-').toLowerCase(),
+                description: data.description,
+                startAt: new Date(data.date),
+                endAt: new Date(data.date),
+                locationName: data.location,
+                capacity: data.maxParticipants,
+                priceNis: data.price,
+                cover: data.imageUrl || 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
+                publish: data.publish,
+                status: data.status || 'active', // Default to active for backwards compatibility
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+                isRegistered: false,
+                registrationCount: 0
+              } as EventWithRegistration;
+            })
+            .filter(event => {
+              // Only show active events to public
+              if (event.status && event.status !== 'active') {
+                console.log(`🚫 Event "${event.title}" is ${event.status}, hiding from public`);
+                return false;
+              }
+              return true;
+            })
+            .sort((a, b) => a.startAt.getTime() - b.startAt.getTime()); // Sort manually
         }
       }
       

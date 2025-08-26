@@ -10,7 +10,9 @@ import MediaManager from '@/components/admin/MediaManager';
 import TrainerManager from '@/components/admin/TrainerManager';
 import WhatsAppGroupManager from '@/components/admin/WhatsAppGroupManager';
 import EmailTester from '@/components/admin/EmailTester';
-import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail } from 'lucide-react';
+import AnnouncementManager from '@/components/admin/AnnouncementManager';
+import PastEventsManager from '@/components/admin/PastEventsManager';
+import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -18,8 +20,10 @@ export default function AdminDashboard() {
   const tabs = [
     { id: 'overview', label: 'סקירה כללית', icon: BarChart3 },
     { id: 'events', label: 'ניהול אירועים', icon: Calendar },
+    { id: 'past-events', label: 'אירועי עבר', icon: History },
     { id: 'users', label: 'ניהול משתמשים', icon: Users },
     { id: 'trainers', label: 'ניהול מדריכים', icon: UserCheck },
+    { id: 'announcements', label: 'ניהול הודעות', icon: Megaphone },
     { id: 'whatsapp', label: 'קישורי ווטסאפ', icon: MessageCircle },
     { id: 'email', label: 'מערכת מייל', icon: Mail },
     { id: 'media', label: 'ניהול מדיה', icon: Image }
@@ -57,8 +61,10 @@ export default function AdminDashboard() {
         <div>
           {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} />}
           {activeTab === 'events' && <EventManager />}
+          {activeTab === 'past-events' && <PastEventsManager />}
           {activeTab === 'users' && <UserManager />}
           {activeTab === 'trainers' && <TrainerManager />}
+          {activeTab === 'announcements' && <AnnouncementManager />}
           {activeTab === 'whatsapp' && <WhatsAppGroupManager />}
           {activeTab === 'email' && <EmailTester />}
           {activeTab === 'media' && <MediaManager />}

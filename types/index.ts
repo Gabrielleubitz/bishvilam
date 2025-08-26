@@ -29,9 +29,11 @@ export interface Event {
   priceNis: number;
   cover?: string;
   publish: boolean;
+  status?: 'active' | 'completed' | 'cancelled' | 'draft'; // Event lifecycle status
   assignedTrainers?: string[]; // Array of trainer UIDs
   groups?: string[]; // Hebrew letters or ["ALL"] for visibility, e.g. ["א","ג"] or ["ALL"]
   createdAt: Date;
+  completedAt?: any; // When event was marked as completed
 }
 
 export interface Registration {

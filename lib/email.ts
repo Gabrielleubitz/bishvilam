@@ -429,7 +429,77 @@ ${reason ? `סיבת הביטול: ${reason}` : ''}
         </p>
       </div>
     `
-  })
+  }),
+
+  // Announcement email template
+  announcement: (title: string, content: string, type: 'info' | 'warning' | 'success' | 'urgent'): EmailTemplate => {
+    const getTypeEmoji = (announcementType: string) => {
+      switch (announcementType) {
+        case 'info': return 'ℹ️';
+        case 'warning': return '⚠️';
+        case 'success': return '✅';
+        case 'urgent': return '🚨';
+        default: return 'ℹ️';
+      }
+    };
+
+    const getTypeColor = (announcementType: string) => {
+      switch (announcementType) {
+        case 'info': return '#3b82f6';
+        case 'warning': return '#f59e0b';
+        case 'success': return '#10b981';
+        case 'urgent': return '#dc2626';
+        default: return '#3b82f6';
+      }
+    };
+
+    const getTypeBackground = (announcementType: string) => {
+      switch (announcementType) {
+        case 'info': return '#eff6ff';
+        case 'warning': return '#fef3c7';
+        case 'success': return '#d1fae5';
+        case 'urgent': return '#fee2e2';
+        default: return '#eff6ff';
+      }
+    };
+
+    const emoji = getTypeEmoji(type);
+    const color = getTypeColor(type);
+    const backgroundColor = getTypeBackground(type);
+
+    return {
+      subject: `${emoji} ${title} - בישבילם`,
+      textContent: `${emoji} ${title}
+
+${content}
+
+---
+הודעה זו נשלחה ממרכז ההכשרה בישבילם.
+
+בברכה,
+צוות בישבילם`,
+      htmlContent: `
+        <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: ${color};">${emoji} ${title}</h2>
+          
+          <div style="background: ${backgroundColor}; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid ${color};">
+            <div style="white-space: pre-line; font-size: 16px;">${content}</div>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+          
+          <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+            הודעה זו נשלחה ממרכז ההכשרה בישבילם.
+          </p>
+          
+          <p style="margin-top: 30px;">
+            בברכה,<br>
+            <strong>צוות בישבילם</strong>
+          </p>
+        </div>
+      `
+    };
+  }
 };
 
 // Helper function to format event date for emails

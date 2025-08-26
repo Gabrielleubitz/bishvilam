@@ -35,9 +35,13 @@ interface Announcement {
   id: string;
   title: string;
   content: string;
+  targetGroups: string[];
+  type: 'info' | 'warning' | 'success' | 'urgent';
+  active: boolean;
+  emailSent: boolean;
   createdAt: any;
-  priority: 'low' | 'medium' | 'high';
-  targetAudience: 'all' | 'registered' | 'specific';
+  createdBy: string;
+  expiresAt?: any;
 }
 
 export default function UserDashboard() {
@@ -62,10 +66,66 @@ export default function UserDashboard() {
     return () => unsubscribe();
   }, []);
 
+  const loadUserAnnouncements = async (profile: any) => {
+    try {
+      console.log('📢 Loading announcements for user:', profile?.email);
+      
+      // Get all active, non-expired announcements
+      const announcementsQuery = query(
+        collection(db, 'announcements'),
+        where('active', '==', true),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const announcementsSnapshot = await getDocs(announcementsQuery);
+      const allAnnouncements = announcementsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Announcement[];
+
+      console.log(`📢 Found ${allAnnouncements.length} active announcements`);
+
+      // Filter announcements relevant to user
+      const userGroups = profile?.groups || [];
+      const currentDate = new Date();
+      
+      const relevantAnnouncements = allAnnouncements.filter(announcement => {
+        // Check if announcement is expired
+        if (announcement.expiresAt) {
+          const expiryDate = announcement.expiresAt.toDate ? announcement.expiresAt.toDate() : new Date(announcement.expiresAt);
+          if (currentDate > expiryDate) {
+            return false;
+          }
+        }
+
+        // Check if user is in target groups
+        const targetGroups = announcement.targetGroups || [];
+        
+        // If targeting all groups
+        if (targetGroups.includes('ALL')) {
+          return true;
+        }
+        
+        // Check if user has any of the target groups
+        return targetGroups.some(targetGroup => userGroups.includes(targetGroup));
+      });
+
+      console.log(`📢 User relevant announcements: ${relevantAnnouncements.length}`);
+      console.log('📢 User groups:', userGroups);
+      
+      setAnnouncements(relevantAnnouncements);
+    } catch (error) {
+      console.error('❌ Error loading announcements:', error);
+      setAnnouncements([]);
+    }
+  };
+
   const loadUserData = async (userId: string) => {
     try {
       setLoading(true);
       console.log('📊 Loading user data for:', userId);
+      
+      let profileData = null;
 
       // Load user profile
       const profilesSnapshot = await getDocs(
@@ -73,7 +133,7 @@ export default function UserDashboard() {
       );
       
       if (!profilesSnapshot.empty) {
-        const profileData = {
+        profileData = {
           id: profilesSnapshot.docs[0].id,
           ...profilesSnapshot.docs[0].data()
         };
@@ -147,26 +207,10 @@ export default function UserDashboard() {
 
       setRegistrations(registrationsWithEvents);
 
-      // Load announcements (placeholder for now)
-      const mockAnnouncements: Announcement[] = [
-        {
-          id: '1',
-          title: 'עדכון חשוב - שינוי מיקום אימון',
-          content: 'האימון של יום רביעי הקרוב יתקיים במיקום חדש: מתקן הספורט בגבעת שמואל. נא להגיע 15 דקות מוקדם יותר.',
-          createdAt: new Date(),
-          priority: 'high',
-          targetAudience: 'all'
-        },
-        {
-          id: '2', 
-          title: 'אירוע חדש נפתח להרשמה',
-          content: 'נפתח אירוע הכשרה חדש "ניווט מתקדם" ליום שישי הקרוב. מקומות מוגבלים!',
-          createdAt: new Date(Date.now() - 86400000),
-          priority: 'medium',
-          targetAudience: 'all'
-        }
-      ];
-      setAnnouncements(mockAnnouncements);
+      // Load relevant announcements for this user
+      if (profileData) {
+        await loadUserAnnouncements(profileData);
+      }
 
     } catch (error) {
       console.error('❌ Error loading user data:', error);
@@ -203,11 +247,23 @@ export default function UserDashboard() {
     return statusMap[paymentStatus] || paymentStatus;
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'border-red-500 bg-red-900/20';
-      case 'medium': return 'border-yellow-500 bg-yellow-900/20';
-      default: return 'border-blue-500 bg-blue-900/20';
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'info': return <AlertCircle className="text-blue-400" size={20} />;
+      case 'warning': return <AlertCircle className="text-yellow-400" size={20} />;
+      case 'success': return <CheckCircle className="text-green-400" size={20} />;
+      case 'urgent': return <AlertCircle className="text-red-400" size={20} />;
+      default: return <Bell className="text-gray-400" size={20} />;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'info': return 'border-blue-500 bg-blue-900/20';
+      case 'warning': return 'border-yellow-500 bg-yellow-900/20';
+      case 'success': return 'border-green-500 bg-green-900/20';
+      case 'urgent': return 'border-red-500 bg-red-900/20';
+      default: return 'border-gray-500 bg-gray-900/20';
     }
   };
 
@@ -438,26 +494,38 @@ export default function UserDashboard() {
               ) : (
                 <div className="space-y-4">
                   {announcements.map((announcement) => (
-                    <div key={announcement.id} className={`card border-l-4 ${getPriorityColor(announcement.priority)}`}>
+                    <div key={announcement.id} className={`card border-l-4 ${getTypeColor(announcement.type)}`}>
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 mt-1">
-                          {announcement.priority === 'high' && <AlertCircle className="text-red-400" size={20} />}
-                          {announcement.priority === 'medium' && <Bell className="text-yellow-400" size={20} />}
-                          {announcement.priority === 'low' && <Bell className="text-blue-400" size={20} />}
+                          {getTypeIcon(announcement.type)}
                         </div>
                         
                         <div className="flex-1">
-                          <h3 className="font-semibold mb-2">{announcement.title}</h3>
-                          <p className="text-gray-300 mb-3">{announcement.content}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(announcement.createdAt).toLocaleDateString('he-IL', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{announcement.title}</h3>
+                            {announcement.emailSent && (
+                              <span className="px-2 py-1 rounded text-xs font-medium bg-purple-900/50 text-purple-300 border border-purple-500/30">
+                                📧 נשלח במייל
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-300 mb-3 whitespace-pre-line">{announcement.content}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-500">
+                              {new Date(announcement.createdAt?.toDate?.() || announcement.createdAt).toLocaleDateString('he-IL', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                            {announcement.expiresAt && (
+                              <p className="text-sm text-yellow-400">
+                                פוגה: {new Date(announcement.expiresAt.toDate()).toLocaleDateString('he-IL')}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
