@@ -12,22 +12,67 @@ import WhatsAppGroupManager from '@/components/admin/WhatsAppGroupManager';
 import EmailTester from '@/components/admin/EmailTester';
 import AnnouncementManager from '@/components/admin/AnnouncementManager';
 import PastEventsManager from '@/components/admin/PastEventsManager';
-import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History } from 'lucide-react';
+import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [activeSection, setActiveSection] = useState('');
+  const [expandedSections, setExpandedSections] = useState<string[]>(['events', 'users']);
 
-  const tabs = [
-    { id: 'overview', label: 'סקירה כללית', icon: BarChart3 },
-    { id: 'events', label: 'ניהול אירועים', icon: Calendar },
-    { id: 'past-events', label: 'אירועי עבר', icon: History },
-    { id: 'users', label: 'ניהול משתמשים', icon: Users },
-    { id: 'trainers', label: 'ניהול מדריכים', icon: UserCheck },
-    { id: 'announcements', label: 'ניהול הודעות', icon: Megaphone },
-    { id: 'whatsapp', label: 'קישורי ווטסאפ', icon: MessageCircle },
-    { id: 'email', label: 'מערכת מייל', icon: Mail },
-    { id: 'media', label: 'ניהול מדיה', icon: Image }
+  const sections = [
+    {
+      id: 'overview',
+      label: 'סקירה כללית',
+      icon: BarChart3,
+      items: [
+        { id: 'overview', label: 'דשבורד ראשי', icon: BarChart3 }
+      ]
+    },
+    {
+      id: 'events',
+      label: 'ניהול אירועים',
+      icon: Calendar,
+      items: [
+        { id: 'events', label: 'אירועים פעילים', icon: Calendar },
+        { id: 'past-events', label: 'אירועי עבר', icon: History }
+      ]
+    },
+    {
+      id: 'users',
+      label: 'ניהול משתמשים',
+      icon: Users,
+      items: [
+        { id: 'users', label: 'רשימת משתמשים', icon: Users },
+        { id: 'trainers', label: 'מדריכים', icon: UserCheck }
+      ]
+    },
+    {
+      id: 'communications',
+      label: 'תקשורת ויצירת קשר',
+      icon: MessageCircle,
+      items: [
+        { id: 'announcements', label: 'הודעות למשתמשים', icon: Megaphone },
+        { id: 'email', label: 'מערכת מייל', icon: Mail },
+        { id: 'whatsapp', label: 'קישורי ווטסאפ', icon: MessageCircle }
+      ]
+    },
+    {
+      id: 'content',
+      label: 'ניהול תוכן',
+      icon: Settings,
+      items: [
+        { id: 'media', label: 'מדיה וגלריה', icon: Image }
+      ]
+    }
   ];
+
+  const toggleSection = (sectionId: string) => {
+    if (expandedSections.includes(sectionId)) {
+      setExpandedSections(expandedSections.filter(id => id !== sectionId));
+    } else {
+      setExpandedSections([...expandedSections, sectionId]);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -39,35 +84,124 @@ export default function AdminDashboard() {
           <p className="text-gray-400">ברוך הבא למערכת הניהול</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-700">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-brand-green text-black'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
-              }`}
-            >
-              <tab.icon size={20} />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div>
-          {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} />}
-          {activeTab === 'events' && <EventManager />}
-          {activeTab === 'past-events' && <PastEventsManager />}
-          {activeTab === 'users' && <UserManager />}
-          {activeTab === 'trainers' && <TrainerManager />}
-          {activeTab === 'announcements' && <AnnouncementManager />}
-          {activeTab === 'whatsapp' && <WhatsAppGroupManager />}
-          {activeTab === 'email' && <EmailTester />}
-          {activeTab === 'media' && <MediaManager />}
+        {/* Section Navigation */}
+        <div className="grid md:grid-cols-4 gap-6">
+          {/* Sidebar Navigation */}
+          <div className="md:col-span-1">
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <nav className="space-y-2">
+                {sections.map((section) => (
+                  <div key={section.id}>
+                    {/* Section Header */}
+                    <button
+                      onClick={() => section.items.length > 1 ? toggleSection(section.id) : setActiveTab(section.items[0].id)}
+                      className="flex items-center justify-between w-full p-2 rounded hover:bg-gray-700 text-gray-300 hover:text-white transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <section.icon size={18} />
+                        <span className="font-medium text-sm">{section.label}</span>
+                      </div>
+                      {section.items.length > 1 && (
+                        <ChevronDown 
+                          size={16} 
+                          className={`transition-transform ${
+                            expandedSections.includes(section.id) ? 'rotate-180' : ''
+                          }`}
+                        />
+                      )}
+                    </button>
+                    
+                    {/* Subsection Items */}
+                    {section.items.length > 1 && expandedSections.includes(section.id) && (
+                      <div className="ml-6 mt-1 space-y-1">
+                        {section.items.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`flex items-center gap-2 w-full p-2 rounded text-sm transition-colors ${
+                              activeTab === item.id
+                                ? 'bg-brand-green text-black font-medium'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                            }`}
+                          >
+                            <item.icon size={16} />
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </nav>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="mt-6 bg-gray-800/50 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-gray-300 mb-3">סטטיסטיקות מהירות</h3>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">אירועים פעילים</span>
+                  <span className="text-brand-green">-</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">משתמשים רשומים</span>
+                  <span className="text-brand-green">-</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">הרשמות השבוע</span>
+                  <span className="text-brand-green">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Main Content Area */}
+          <div className="md:col-span-3">
+            <div className="bg-gray-800/30 rounded-lg">
+              {/* Content Header */}
+              <div className="border-b border-gray-700 p-6 pb-4">
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const currentItem = sections
+                      .flatMap(section => section.items)
+                      .find(item => item.id === activeTab);
+                    const currentSection = sections.find(section => 
+                      section.items.some(item => item.id === activeTab)
+                    );
+                    
+                    return (
+                      <>
+                        {currentSection && <currentSection.icon size={24} className="text-brand-green" />}
+                        <div>
+                          <h2 className="text-xl font-bold">
+                            {currentItem?.label || 'ניהול מערכת'}
+                          </h2>
+                          {currentSection && currentItem?.id !== currentSection.id && (
+                            <p className="text-sm text-gray-400">
+                              {currentSection.label}
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+              
+              {/* Tab Content */}
+              <div className="p-6">
+                {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} />}
+                {activeTab === 'events' && <EventManager />}
+                {activeTab === 'past-events' && <PastEventsManager />}
+                {activeTab === 'users' && <UserManager />}
+                {activeTab === 'trainers' && <TrainerManager />}
+                {activeTab === 'announcements' && <AnnouncementManager />}
+                {activeTab === 'whatsapp' && <WhatsAppGroupManager />}
+                {activeTab === 'email' && <EmailTester />}
+                {activeTab === 'media' && <MediaManager />}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
