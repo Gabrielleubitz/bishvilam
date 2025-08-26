@@ -235,9 +235,11 @@ export default function EventDetailPage() {
           body: JSON.stringify({
             userEmail: currentUser.email,
             userName: registrationData.userName,
+            userPhone: registrationData.userPhone,
             eventTitle: event.title,
             eventDate: event.startAt.toISOString(),
             eventLocation: event.locationName,
+            registrationStatus: registrationData.status === 'paid' ? 'רשום ושולם' : 'רשום - ממתין לתשלום',
           }),
         });
 

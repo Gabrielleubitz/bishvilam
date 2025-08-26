@@ -1,4 +1,6 @@
 import Mailjet from 'node-mailjet';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase.client';
 
 // Initialize Mailjet client
 let mailjet: any = null;
@@ -11,6 +13,37 @@ function getMailjetClient() {
     });
   }
   return mailjet;
+}
+
+// Get admin emails from environment or database
+async function getAdminEmails(): Promise<string[]> {
+  // Try environment variable first
+  const envEmails = process.env.ADMIN_EMAILS;
+  if (envEmails) {
+    return envEmails.split(',').map(email => email.trim()).filter(Boolean);
+  }
+
+  // Fallback to querying admin users from database
+  try {
+    const adminQuery = query(
+      collection(db, 'profiles'),
+      where('role', '==', 'admin')
+    );
+    const adminSnapshot = await getDocs(adminQuery);
+    const adminEmails: string[] = [];
+    
+    adminSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.email) {
+        adminEmails.push(data.email);
+      }
+    });
+    
+    return adminEmails;
+  } catch (error) {
+    console.error('Error fetching admin emails:', error);
+    return [];
+  }
 }
 
 export interface EmailTemplate {
@@ -28,54 +61,239 @@ export async function sendEmail(
   to: EmailRecipient | EmailRecipient[],
   template: EmailTemplate,
   fromEmail?: string,
-  fromName?: string
+  fromName?: string,
+  retries: number = 3
 ): Promise<boolean> {
+  let attempt = 0;
+  
+  while (attempt < retries) {
+    try {
+      const client = getMailjetClient();
+      
+      if (!client) {
+        console.warn('📧 Mailjet not configured - email notifications disabled');
+        return false;
+      }
+
+      const recipients = Array.isArray(to) ? to : [to];
+      const from = fromEmail || process.env.MAIL_FROM || 'noreply@bishvilam.com';
+      const senderName = fromName || process.env.MAIL_FROM_NAME || 'בישבילם - מרכז ההכשרה';
+      
+      const request = await client
+        .post('send', { version: 'v3.1' })
+        .request({
+          Messages: [
+            {
+              From: {
+                Email: from,
+                Name: senderName
+              },
+              To: recipients.map(recipient => ({
+                Email: recipient.email,
+                Name: recipient.name || recipient.email.split('@')[0]
+              })),
+              Subject: template.subject,
+              TextPart: template.textContent,
+              HTMLPart: template.htmlContent || template.textContent.replace(/\n/g, '<br>')
+            }
+          ]
+        });
+
+      console.log('📧 Email sent successfully:', {
+        recipients: recipients.length,
+        subject: template.subject,
+        messageId: request.body.Messages[0]?.MessageID,
+        attempt: attempt + 1
+      });
+
+      return true;
+    } catch (error) {
+      attempt++;
+      console.error(`❌ Email send attempt ${attempt} failed:`, error);
+      
+      if (attempt >= retries) {
+        console.error('❌ All email send attempts failed');
+        return false;
+      }
+      
+      // Exponential backoff
+      const delay = Math.pow(2, attempt) * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  return false;
+}
+
+// Send emails to admins
+export async function sendAdminNotification(template: EmailTemplate): Promise<boolean> {
   try {
-    const client = getMailjetClient();
+    const adminEmails = await getAdminEmails();
     
-    if (!client) {
-      console.warn('📧 Mailjet not configured - email notifications disabled');
+    if (adminEmails.length === 0) {
+      console.warn('⚠️ No admin emails configured - skipping admin notification');
       return false;
     }
 
-    const recipients = Array.isArray(to) ? to : [to];
-    const from = fromEmail || process.env.MAIL_FROM || 'noreply@bishvilam.com';
-    
-    const request = await client
-      .post('send', { version: 'v3.1' })
-      .request({
-        Messages: [
-          {
-            From: {
-              Email: from,
-              Name: fromName || 'בישבילם - מרכז ההכשרה'
-            },
-            To: recipients.map(recipient => ({
-              Email: recipient.email,
-              Name: recipient.name || recipient.email.split('@')[0]
-            })),
-            Subject: template.subject,
-            TextPart: template.textContent,
-            HTMLPart: template.htmlContent || template.textContent.replace(/\n/g, '<br>')
-          }
-        ]
-      });
-
-    console.log('📧 Email sent successfully:', {
-      recipients: recipients.length,
-      subject: template.subject,
-      messageId: request.body.Messages[0]?.MessageID
-    });
-
-    return true;
+    const adminRecipients = adminEmails.map(email => ({ email, name: 'Admin' }));
+    return await sendEmail(adminRecipients, template);
   } catch (error) {
-    console.error('❌ Error sending email:', error);
+    console.error('❌ Error sending admin notification:', error);
     return false;
   }
 }
 
 // Email templates for common scenarios
 export const emailTemplates = {
+  // User welcome email
+  welcomeUser: (userName: string): EmailTemplate => ({
+    subject: `ברוך הבא לבישבילם, ${userName}!`,
+    textContent: `שלום ${userName},
+
+ברוך הבא למרכז ההכשרה בישבילם!
+
+אנחנו שמחים שהצטרפת אלינו. במרכז שלנו תמצא אימונים מקצועיים שיכינו אותך לשירות הצבאי בצורה הטובה ביותר.
+
+השלבים הבאים:
+• בדוק את האימונים הזמינים באתר
+• הירשם לאימונים המתאימים לך
+• הגע עם ציוד ספורט ומוטיבציה!
+
+למידע נוסף או שאלות, אתה מוזמן ליצור קשר איתנו.
+
+בברכה,
+צוות בישבילם`,
+    htmlContent: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #2563eb;">🎉 ברוך הבא לבישבילם!</h2>
+        
+        <p>שלום <strong>${userName}</strong>,</p>
+        
+        <p>ברוך הבא למרכז ההכשרה בישבילם!</p>
+        
+        <p>אנחנו שמחים שהצטרפת אלינו. במרכז שלנו תמצא אימונים מקצועיים שיכינו אותך לשירות הצבאי בצורה הטובה ביותר.</p>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #1e40af;">השלבים הבאים:</h3>
+          <ul>
+            <li>בדוק את האימונים הזמינים באתר</li>
+            <li>הירשם לאימונים המתאימים לך</li>
+            <li>הגע עם ציוד ספורט ומוטיבציה!</li>
+          </ul>
+        </div>
+        
+        <p>למידע נוסף או שאלות, אתה מוזמן ליצור קשר איתנו.</p>
+        
+        <p style="margin-top: 30px;">
+          בברכה,<br>
+          <strong>צוות בישבילם</strong>
+        </p>
+      </div>
+    `
+  }),
+
+  // Admin notification for new user
+  adminNewUser: (userName: string, userEmail: string, userPhone: string, userGroups: string[], createdAt: string): EmailTemplate => ({
+    subject: `🆕 משתמש חדש נרשם - ${userName}`,
+    textContent: `התקבל משתמש חדש במערכת:
+
+פרטי המשתמש:
+• שם: ${userName}
+• אימייל: ${userEmail}
+• טלפון: ${userPhone || 'לא צוין'}
+• קבוצות: ${userGroups.length > 0 ? userGroups.join(', ') : 'לא שויך לקבוצה'}
+• תאריך הרשמה: ${createdAt}
+
+ניתן לצפות ולנהל את המשתמש בפאנל הניהול.
+
+מערכת בישבילם`,
+    htmlContent: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #10b981;">🆕 משתמש חדש נרשם</h2>
+        
+        <p>התקבל משתמש חדש במערכת:</p>
+        
+        <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #10b981;">
+          <h3 style="margin-top: 0; color: #065f46;">פרטי המשתמש:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px;"><strong>שם:</strong> ${userName}</li>
+            <li style="margin-bottom: 8px;"><strong>אימייל:</strong> ${userEmail}</li>
+            <li style="margin-bottom: 8px;"><strong>טלפון:</strong> ${userPhone || 'לא צוין'}</li>
+            <li style="margin-bottom: 8px;"><strong>קבוצות:</strong> ${userGroups.length > 0 ? userGroups.join(', ') : 'לא שויך לקבוצה'}</li>
+            <li style="margin-bottom: 8px;"><strong>תאריך הרשמה:</strong> ${createdAt}</li>
+          </ul>
+        </div>
+        
+        <p>ניתן לצפות ולנהל את המשתמש בפאנל הניהול.</p>
+        
+        <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+          מערכת בישבילם
+        </p>
+      </div>
+    `
+  }),
+
+  // Admin notification for new event registration
+  adminEventRegistration: (
+    userName: string,
+    userEmail: string,
+    userPhone: string,
+    eventTitle: string,
+    eventDate: string,
+    eventLocation: string,
+    registrationStatus: string
+  ): EmailTemplate => ({
+    subject: `📝 הרשמה חדשה לאירוע - ${eventTitle}`,
+    textContent: `התקבלה הרשמה חדשה לאירוע:
+
+פרטי המשתמש:
+• שם: ${userName}
+• אימייל: ${userEmail}
+• טלפון: ${userPhone || 'לא צוין'}
+
+פרטי האירוע:
+• שם האירוע: ${eventTitle}
+• תאריך: ${eventDate}
+• מיקום: ${eventLocation}
+• סטטוס הרשמה: ${registrationStatus}
+
+ניתן לצפות ולנהל את ההרשמות בפאנל הניהול.
+
+מערכת בישבילם`,
+    htmlContent: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #3b82f6;">📝 הרשמה חדשה לאירוע</h2>
+        
+        <p>התקבלה הרשמה חדשה לאירוע:</p>
+        
+        <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #3b82f6;">
+          <h3 style="margin-top: 0; color: #1e40af;">פרטי המשתמש:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px;"><strong>שם:</strong> ${userName}</li>
+            <li style="margin-bottom: 8px;"><strong>אימייל:</strong> ${userEmail}</li>
+            <li style="margin-bottom: 8px;"><strong>טלפון:</strong> ${userPhone || 'לא צוין'}</li>
+          </ul>
+        </div>
+        
+        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #f59e0b;">
+          <h3 style="margin-top: 0; color: #92400e;">פרטי האירוע:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px;"><strong>שם האירוע:</strong> ${eventTitle}</li>
+            <li style="margin-bottom: 8px;"><strong>תאריך:</strong> ${eventDate}</li>
+            <li style="margin-bottom: 8px;"><strong>מיקום:</strong> ${eventLocation}</li>
+            <li style="margin-bottom: 8px;"><strong>סטטוס הרשמה:</strong> ${registrationStatus}</li>
+          </ul>
+        </div>
+        
+        <p>ניתן לצפות ולנהל את ההרשמות בפאנל הניהול.</p>
+        
+        <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+          מערכת בישבילם
+        </p>
+      </div>
+    `
+  }),
+
   eventRegistration: (eventTitle: string, eventDate: string, eventLocation: string): EmailTemplate => ({
     subject: `אישור הרשמה - ${eventTitle}`,
     textContent: `שלום,

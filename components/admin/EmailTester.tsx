@@ -5,6 +5,7 @@ import { Mail, Send, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function EmailTester() {
   const [email, setEmail] = useState('');
+  const [testType, setTestType] = useState<'basic' | 'welcome' | 'registration'>('basic');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -20,15 +21,49 @@ export default function EmailTester() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/test-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      let response;
+      
+      if (testType === 'basic') {
+        response = await fetch('/api/test-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+      } else if (testType === 'welcome') {
+        response = await fetch('/api/send-welcome-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userEmail: email,
+            userName: 'בוחן מערכת',
+            userPhone: '050-1234567',
+            userGroups: ['א', 'ב'],
+            createdAt: new Date().toLocaleDateString('he-IL')
+          }),
+        });
+      } else if (testType === 'registration') {
+        response = await fetch('/api/send-registration-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userEmail: email,
+            userName: 'בוחן מערכת',
+            userPhone: '050-1234567',
+            eventTitle: 'אימון בדיקה',
+            eventDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            eventLocation: 'בוש עציון - מרכז האימון',
+            registrationStatus: 'רשום ושולם'
+          }),
+        });
+      }
 
-      const data = await response.json();
+      const data = await response!.json();
       
       setResult({
         success: data.success,
@@ -52,6 +87,21 @@ export default function EmailTester() {
       </div>
 
       <form onSubmit={handleTest} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            סוג בדיקה
+          </label>
+          <select
+            value={testType}
+            onChange={(e) => setTestType(e.target.value as 'basic' | 'welcome' | 'registration')}
+            className="input"
+          >
+            <option value="basic">מייל בדיקה בסיסי</option>
+            <option value="welcome">מייל ברוכים הבאים + התראה למנהלים</option>
+            <option value="registration">מייל אישור הרשמה + התראה למנהלים</option>
+          </select>
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-2">
             כתובת מייל לבדיקה
