@@ -1,6 +1,5 @@
 import Mailjet from 'node-mailjet';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase.client';
+import { adminDb } from '@/lib/firebase.admin';
 
 // Initialize Mailjet client
 let mailjet: any = null;
@@ -25,11 +24,8 @@ async function getAdminEmails(): Promise<string[]> {
 
   // Fallback to querying admin users from database
   try {
-    const adminQuery = query(
-      collection(db, 'profiles'),
-      where('role', '==', 'admin')
-    );
-    const adminSnapshot = await getDocs(adminQuery);
+    const adminQuery = adminDb.collection('profiles').where('role', '==', 'admin');
+    const adminSnapshot = await adminQuery.get();
     const adminEmails: string[] = [];
     
     adminSnapshot.docs.forEach(doc => {
@@ -101,8 +97,10 @@ export async function sendEmail(
 
       console.log('📧 Email sent successfully:', {
         recipients: recipients.length,
+        recipientEmails: recipients.map(r => r.email),
         subject: template.subject,
         messageId: request.body.Messages[0]?.MessageID,
+        status: request.body.Messages[0]?.Status,
         attempt: attempt + 1
       });
 
@@ -128,7 +126,10 @@ export async function sendEmail(
 // Send emails to admins
 export async function sendAdminNotification(template: EmailTemplate): Promise<boolean> {
   try {
+    console.log('📧 Getting admin emails...');
     const adminEmails = await getAdminEmails();
+    
+    console.log('📧 Admin emails found:', adminEmails);
     
     if (adminEmails.length === 0) {
       console.warn('⚠️ No admin emails configured - skipping admin notification');
@@ -136,6 +137,7 @@ export async function sendAdminNotification(template: EmailTemplate): Promise<bo
     }
 
     const adminRecipients = adminEmails.map(email => ({ email, name: 'Admin' }));
+    console.log('📧 Sending admin notification to:', adminRecipients.map(r => r.email));
     return await sendEmail(adminRecipients, template);
   } catch (error) {
     console.error('❌ Error sending admin notification:', error);

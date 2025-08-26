@@ -30,7 +30,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log('📧 Sending welcome email and admin notification for:', userEmail);
+    console.log('📧 Starting welcome email process for:', userEmail);
+    console.log('📧 User details:', { userName, userPhone, userGroups, createdAt });
+    
+    // Check if email service is properly configured
+    console.log('📧 Environment check:', {
+      hasApiKey: !!process.env.MAILJET_API_KEY,
+      hasSecret: !!process.env.MAILJET_API_SECRET,
+      fromEmail: process.env.MAIL_FROM,
+      adminEmails: process.env.ADMIN_EMAILS
+    });
 
     // Send welcome email to user
     const welcomeTemplate = emailTemplates.welcomeUser(userName);

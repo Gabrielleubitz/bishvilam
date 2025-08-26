@@ -32,7 +32,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log('📧 Sending registration emails for:', userEmail, 'event:', eventTitle);
+    console.log('📧 Starting registration email process for:', userEmail, 'event:', eventTitle);
+    console.log('📧 Registration details:', { userName, userPhone, eventLocation, registrationStatus });
+    
+    // Check if email service is properly configured
+    console.log('📧 Environment check:', {
+      hasApiKey: !!process.env.MAILJET_API_KEY,
+      hasSecret: !!process.env.MAILJET_API_SECRET,
+      fromEmail: process.env.MAIL_FROM,
+      adminEmails: process.env.ADMIN_EMAILS
+    });
 
     // Format the event date for email
     const formattedDate = formatEventDateForEmail(eventDate);
