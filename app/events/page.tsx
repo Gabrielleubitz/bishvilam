@@ -333,13 +333,6 @@ export default function EventsPage() {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Debug info */}
-      {currentUser && (
-        <div className="bg-gray-800/50 text-xs p-2 text-center">
-          🔍 Debug: User: {currentUser.email} | Events: {events.length} | 
-          Registered: {events.filter(e => e.isRegistered).length}
-        </div>
-      )}
       
       {/* Header */}
       <section className="bg-gray-900 py-16">

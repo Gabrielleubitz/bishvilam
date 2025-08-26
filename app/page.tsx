@@ -137,10 +137,6 @@ export default function HomePage() {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Debug Info */}
-      <div className="bg-gray-800/50 text-xs p-2 text-center">
-        🏠 Homepage Debug: Loading: {eventsLoading ? 'Yes' : 'No'} | Active Events: {recentEvents.length} | Past Events: {pastEvents.length}
-      </div>
       
       {/* Hero Section */}
       <section className="relative py-20 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url(${getHeroImage()})`}}>
@@ -290,10 +286,6 @@ export default function HomePage() {
               <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2 text-gray-300">אין אירועים פורסמו עדיין</h3>
               <p className="text-gray-400 mb-6">אירועים חדשים יתפרסמו בקרוב</p>
-              <div className="space-y-2 text-sm text-gray-500">
-                <p>Debug: Loading = {eventsLoading ? 'true' : 'false'}</p>
-                <p>Debug: Events found = {recentEvents.length}</p>
-              </div>
               <Link href="/events" className="btn-outline mt-4">
                 עיין בכל האירועים
               </Link>
@@ -391,10 +383,6 @@ export default function HomePage() {
               <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2 text-gray-300">אין אירועי עבר עדיין</h3>
               <p className="text-gray-400 mb-6">אירועים שיושלמו יופיעו כאן</p>
-              <div className="space-y-2 text-sm text-gray-500">
-                <p>Debug: Past Events Loading = {pastEventsLoading ? 'true' : 'false'}</p>
-                <p>Debug: Past Events found = {pastEvents.length}</p>
-              </div>
             </div>
           )}
         </div>

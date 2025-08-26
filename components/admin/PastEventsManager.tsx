@@ -215,11 +215,6 @@ export default function PastEventsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Debug info */}
-      <div className="bg-gray-800 p-3 rounded text-sm">
-        <div>סטטוס אותנטיקציה: {currentUser ? '✅ מחובר' : '❌ לא מחובר'}</div>
-        {currentUser && <div>משתמש: {currentUser.email}</div>}
-      </div>
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

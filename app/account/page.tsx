@@ -298,11 +298,6 @@ export default function UserDashboard() {
     <div className="min-h-screen">
       <Navbar />
       
-      {/* Debug Info */}
-      <div className="bg-gray-800/50 text-xs p-2 text-center">
-        🔍 Debug: User: {currentUser.email} | Registrations: {registrations.length} | 
-        Active: {registrations.filter(r => r.status === 'confirmed').length}
-      </div>
       
       {/* Header */}
       <section className="bg-gray-900 py-12">
