@@ -161,6 +161,29 @@ export default function EventManager() {
     }
   };
 
+  const updatePaymentStatus = async (registrationId: string, newPaymentStatus: 'paid' | 'pending' | 'free') => {
+    try {
+      console.log('💰 Updating payment status:', registrationId, 'to', newPaymentStatus);
+      await updateDoc(doc(db, 'registrations', registrationId), {
+        paymentStatus: newPaymentStatus,
+        updatedAt: new Date()
+      });
+      
+      const statusMessages = {
+        'paid': 'התשלום עודכן לשולם ✅',
+        'pending': 'התשלום עודכן לממתין 🟡',
+        'free': 'התשלום עודכן לחינם 🆓'
+      };
+      
+      console.log('✅ Payment status updated successfully');
+      alert(statusMessages[newPaymentStatus]);
+      loadEvents(); // Reload to show updated status
+    } catch (error) {
+      console.error('❌ Error updating payment status:', error);
+      alert('שגיאה בעדכון סטטוס התשלום: ' + (error as any).message);
+    }
+  };
+
   const deleteEvent = async (eventId: string) => {
     const event = events.find(e => e.id === eventId);
     if (!event) return;
@@ -552,17 +575,46 @@ export default function EventManager() {
                             </div>
                           </div>
                           
-                          <div className="text-left">
-                            <div className={`text-sm px-2 py-1 rounded ${
-                              registration.paymentStatus === 'paid' ? 'bg-green-900/50 text-green-300' :
-                              registration.paymentStatus === 'pending' ? 'bg-yellow-900/50 text-yellow-300' :
-                              'bg-gray-700 text-gray-300'
-                            }`}>
-                              {registration.paymentStatus === 'paid' ? 'שולם' :
-                               registration.paymentStatus === 'pending' ? 'ממתין לתשלום' : 'חינם'}
+                          <div className="flex items-center gap-3">
+                            {/* Payment Status Dropdown */}
+                            <div className="text-left">
+                              <select
+                                value={registration.paymentStatus}
+                                onChange={(e) => updatePaymentStatus(registration.id, e.target.value as 'paid' | 'pending' | 'free')}
+                                disabled={!currentUser}
+                                className={`text-sm px-2 py-1 rounded border-0 cursor-pointer ${
+                                  registration.paymentStatus === 'paid' ? 'bg-green-900/50 text-green-300' :
+                                  registration.paymentStatus === 'pending' ? 'bg-yellow-900/50 text-yellow-300' :
+                                  'bg-gray-700 text-gray-300'
+                                } ${!currentUser ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
+                              >
+                                <option value="paid">💰 שולם</option>
+                                <option value="pending">🟡 ממתין</option>
+                                <option value="free">🆓 חינם</option>
+                              </select>
+                              <div className="text-xs text-gray-400 mt-1">
+                                {new Date(registration.registeredAt?.toDate?.() || registration.registeredAt).toLocaleDateString('he-IL')}
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                              {new Date(registration.registeredAt?.toDate?.() || registration.registeredAt).toLocaleDateString('he-IL')}
+                            
+                            {/* Contact Actions */}
+                            <div className="flex gap-1">
+                              <a
+                                href={`mailto:${registration.userEmail}`}
+                                className="p-1.5 hover:bg-gray-700 rounded text-blue-400 text-xs"
+                                title="שלח אימייל"
+                              >
+                                <Mail size={14} />
+                              </a>
+                              {registration.userPhone && (
+                                <a
+                                  href={`tel:${registration.userPhone}`}
+                                  className="p-1.5 hover:bg-gray-700 rounded text-green-400 text-xs"
+                                  title="התקשר"
+                                >
+                                  <Phone size={14} />
+                                </a>
+                              )}
                             </div>
                           </div>
                         </div>
