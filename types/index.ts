@@ -41,6 +41,9 @@ export interface Registration {
   eventId: string;
   uid: string;
   status: 'pending' | 'paid' | 'cancelled' | 'waitlist';
+  paymentStatus?: 'paid' | 'pending' | 'free'; // Admin-controlled payment status
+  amountPaid?: number; // Actual amount paid (can be different from event price)
+  paymentDate?: Date; // When payment was recorded
   pickup?: string;
   medical?: string;
   notes?: string;
@@ -48,7 +51,7 @@ export interface Registration {
   checkedInAt?: Date;
   checkedInBy?: string; // Trainer UID who checked them in
   createdAt: Date;
-  paidAt?: Date;
+  paidAt?: Date; // Original field (keeping for backwards compatibility)
 }
 
 export interface Media {

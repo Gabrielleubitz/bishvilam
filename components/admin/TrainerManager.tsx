@@ -53,8 +53,8 @@ export default function TrainerManager() {
         return {
           id: doc.id,
           ...data,
-          startAt: data.startAt?.toDate ? data.startAt.toDate() : new Date(data.startAt),
-          endAt: data.endAt?.toDate ? data.endAt.toDate() : new Date(data.endAt),
+          startAt: new Date(data.date),
+          endAt: new Date(data.date),
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
         } as Event;
       });

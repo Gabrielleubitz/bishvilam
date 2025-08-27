@@ -12,12 +12,133 @@ import WhatsAppGroupManager from '@/components/admin/WhatsAppGroupManager';
 import EmailTester from '@/components/admin/EmailTester';
 import AnnouncementManager from '@/components/admin/AnnouncementManager';
 import PastEventsManager from '@/components/admin/PastEventsManager';
-import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown } from 'lucide-react';
+import EventAttendanceChecker from '@/components/admin/EventAttendanceChecker';
+import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown, RefreshCw, ClipboardCheck } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activeSection, setActiveSection] = useState('');
   const [expandedSections, setExpandedSections] = useState<string[]>(['events', 'users']);
+  
+  // Stats state
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalEvents: 0,
+    recentRegistrations: 0,
+    publishedEvents: 0
+  });
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      console.log('Starting to fetch stats...');
+      setStatsLoading(true);
+      
+      // Fetch total users
+      console.log('Fetching users from profiles collection...');
+      const usersSnapshot = await getDocs(collection(db, 'profiles'));
+      const totalUsers = usersSnapshot.size;
+      console.log('Total users found:', totalUsers);
+
+      // Fetch total events
+      const eventsSnapshot = await getDocs(collection(db, 'events'));
+      const totalEvents = eventsSnapshot.size;
+
+      // Fetch published events
+      const publishedEventsQuery = query(
+        collection(db, 'events'),
+        where('publish', '==', true)
+      );
+      const publishedEventsSnapshot = await getDocs(publishedEventsQuery);
+      const publishedEvents = publishedEventsSnapshot.size;
+
+      // Fetch recent registrations (last 7 days)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      try {
+        const recentUsersQuery = query(
+          collection(db, 'profiles'),
+          where('createdAt', '>=', Timestamp.fromDate(weekAgo)),
+          orderBy('createdAt', 'desc')
+        );
+        const recentUsersSnapshot = await getDocs(recentUsersQuery);
+        const recentRegistrations = recentUsersSnapshot.size;
+
+        // Get recent users for display (limit to 3 most recent)
+        const recentUsersDisplayQuery = query(
+          collection(db, 'profiles'),
+          orderBy('createdAt', 'desc'),
+          limit(3)
+        );
+        const recentUsersDisplaySnapshot = await getDocs(recentUsersDisplayQuery);
+        const recentUsersData = recentUsersDisplaySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setStats({
+          totalUsers,
+          totalEvents,
+          recentRegistrations,
+          publishedEvents
+        });
+        
+        setRecentUsers(recentUsersData);
+      } catch (recentError) {
+        console.log('Recent users query failed, using fallback...');
+        // If recent query fails, still set the basic stats
+        setStats({
+          totalUsers,
+          totalEvents,
+          recentRegistrations: 0,
+          publishedEvents
+        });
+        setRecentUsers([]);
+      }
+
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      
+      // Fallback queries
+      try {
+        console.log('Trying fallback queries...');
+        
+        const usersSnapshot = await getDocs(collection(db, 'profiles'));
+        const eventsSnapshot = await getDocs(collection(db, 'events'));
+        
+        const publishedEventsQuery = query(
+          collection(db, 'events'),
+          where('publish', '==', true)
+        );
+        const publishedEventsSnapshot = await getDocs(publishedEventsQuery);
+        
+        setStats({
+          totalUsers: usersSnapshot.size,
+          totalEvents: eventsSnapshot.size,
+          recentRegistrations: 0,
+          publishedEvents: publishedEventsSnapshot.size
+        });
+        
+        setRecentUsers([]);
+      } catch (fallbackError) {
+        console.error('Fallback queries also failed:', fallbackError);
+        setStats({
+          totalUsers: 0,
+          totalEvents: 0,
+          recentRegistrations: 0,
+          publishedEvents: 0
+        });
+      }
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const sections = [
     {
@@ -34,6 +155,7 @@ export default function AdminDashboard() {
       icon: Calendar,
       items: [
         { id: 'events', label: 'אירועים פעילים', icon: Calendar },
+        { id: 'attendance', label: 'בדיקת נוכחות', icon: ClipboardCheck },
         { id: 'past-events', label: 'אירועי עבר', icon: History }
       ]
     },
@@ -85,9 +207,24 @@ export default function AdminDashboard() {
         </div>
 
         {/* Section Navigation */}
-        <div className="grid md:grid-cols-4 gap-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6">
           {/* Sidebar Navigation */}
-          <div className="md:col-span-1">
+          <div className="lg:col-span-1">
+            {/* Mobile Navigation Toggle */}
+            <div className="lg:hidden mb-4">
+              <button
+                onClick={() => setExpandedSections(expandedSections.length === 0 ? ['events', 'users'] : [])}
+                className="w-full btn-outline flex items-center justify-between"
+              >
+                <span>תפריט ניהול</span>
+                <ChevronDown 
+                  size={16} 
+                  className={`transition-transform ${expandedSections.length > 0 ? 'rotate-180' : ''}`}
+                />
+              </button>
+            </div>
+            
+            <div className={`${expandedSections.length === 0 ? 'hidden lg:block' : 'block'}`}>
             <div className="bg-gray-800/50 rounded-lg p-4">
               <nav className="space-y-2">
                 {sections.map((section) => (
@@ -137,26 +274,51 @@ export default function AdminDashboard() {
             
             {/* Quick Stats */}
             <div className="mt-6 bg-gray-800/50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-300 mb-3">סטטיסטיקות מהירות</h3>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">אירועים פעילים</span>
-                  <span className="text-brand-green">-</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">משתמשים רשומים</span>
-                  <span className="text-brand-green">-</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">הרשמות השבוע</span>
-                  <span className="text-brand-green">-</span>
-                </div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-300">סטטיסטיקות מהירות</h3>
+                <button
+                  onClick={fetchStats}
+                  disabled={statsLoading}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title="רענן נתונים"
+                >
+                  <RefreshCw 
+                    size={14} 
+                    className={statsLoading ? 'animate-spin' : ''} 
+                  />
+                </button>
               </div>
+              
+              {statsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-green"></div>
+                </div>
+              ) : (
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">אירועים פעילים</span>
+                    <span className="text-brand-green font-medium">{stats.publishedEvents}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">סך אירועים</span>
+                    <span className="text-blue-400 font-medium">{stats.totalEvents}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">משתמשים רשומים</span>
+                    <span className="text-purple-400 font-medium">{stats.totalUsers}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">הרשמות השבוע</span>
+                    <span className="text-yellow-400 font-medium">{stats.recentRegistrations}</span>
+                  </div>
+                </div>
+              )}
+            </div>
             </div>
           </div>
           
           {/* Main Content Area */}
-          <div className="md:col-span-3">
+          <div className="lg:col-span-3">
             <div className="bg-gray-800/30 rounded-lg">
               {/* Content Header */}
               <div className="border-b border-gray-700 p-6 pb-4">
@@ -190,8 +352,16 @@ export default function AdminDashboard() {
               
               {/* Tab Content */}
               <div className="p-6">
-                {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} />}
+                {activeTab === 'overview' && (
+                  <OverviewTab 
+                    setActiveTab={setActiveTab} 
+                    stats={stats}
+                    recentUsers={recentUsers}
+                    loading={statsLoading}
+                  />
+                )}
                 {activeTab === 'events' && <EventManager />}
+                {activeTab === 'attendance' && <EventAttendanceChecker />}
                 {activeTab === 'past-events' && <PastEventsManager />}
                 {activeTab === 'users' && <UserManager />}
                 {activeTab === 'trainers' && <TrainerManager />}
@@ -208,109 +378,23 @@ export default function AdminDashboard() {
   );
 }
 
-function OverviewTab({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalEvents: 0,
-    recentRegistrations: 0,
-    publishedEvents: 0
-  });
-  const [recentUsers, setRecentUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    console.log('OverviewTab mounted, fetching stats...');
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      console.log('Starting to fetch stats...');
-      setLoading(true);
-      
-      // Fetch total users
-      console.log('Fetching users from profiles collection...');
-      const usersSnapshot = await getDocs(collection(db, 'profiles'));
-      const totalUsers = usersSnapshot.size;
-      console.log('Total users found:', totalUsers);
-
-      // Fetch total events
-      const eventsSnapshot = await getDocs(collection(db, 'events'));
-      const totalEvents = eventsSnapshot.size;
-
-      // Fetch published events (using same field as your EventsPage)
-      const publishedEventsQuery = query(
-        collection(db, 'events'),
-        where('publish', '==', true)
-      );
-      const publishedEventsSnapshot = await getDocs(publishedEventsQuery);
-      const publishedEvents = publishedEventsSnapshot.size;
-
-      // Fetch recent registrations (last 7 days)
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      
-      const recentUsersQuery = query(
-        collection(db, 'profiles'),
-        where('createdAt', '>=', Timestamp.fromDate(weekAgo)),
-        orderBy('createdAt', 'desc')
-      );
-      const recentUsersSnapshot = await getDocs(recentUsersQuery);
-      const recentRegistrations = recentUsersSnapshot.size;
-
-      // Get recent users for display (limit to 3 most recent)
-      const recentUsersDisplayQuery = query(
-        collection(db, 'profiles'),
-        orderBy('createdAt', 'desc'),
-        limit(3)
-      );
-      const recentUsersDisplaySnapshot = await getDocs(recentUsersDisplayQuery);
-      const recentUsersData = recentUsersDisplaySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setStats({
-        totalUsers,
-        totalEvents,
-        recentRegistrations,
-        publishedEvents
-      });
-      
-      setRecentUsers(recentUsersData);
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      
-      // If there are index issues, try simpler queries
-      try {
-        console.log('Trying fallback queries...');
-        
-        const usersSnapshot = await getDocs(collection(db, 'profiles'));
-        const eventsSnapshot = await getDocs(collection(db, 'events'));
-        
-        // Simple published events query without orderBy
-        const publishedEventsQuery = query(
-          collection(db, 'events'),
-          where('publish', '==', true)
-        );
-        const publishedEventsSnapshot = await getDocs(publishedEventsQuery);
-        
-        setStats({
-          totalUsers: usersSnapshot.size,
-          totalEvents: eventsSnapshot.size,
-          recentRegistrations: 0, // Will show 0 if recent query fails
-          publishedEvents: publishedEventsSnapshot.size
-        });
-        
-        setRecentUsers([]);
-      } catch (fallbackError) {
-        console.error('Fallback queries also failed:', fallbackError);
-      }
-    } finally {
-      setLoading(false);
-    }
+// Updated OverviewTab to receive props instead of fetching data itself
+function OverviewTab({ 
+  setActiveTab, 
+  stats, 
+  recentUsers, 
+  loading 
+}: { 
+  setActiveTab: (tab: string) => void;
+  stats: {
+    totalUsers: number;
+    totalEvents: number;
+    recentRegistrations: number;
+    publishedEvents: number;
   };
-
+  recentUsers: any[];
+  loading: boolean;
+}) {
   const formatTimeAgo = (timestamp: any) => {
     if (!timestamp) return 'לא זמין';
     

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Send, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function EmailTester() {
@@ -12,6 +12,26 @@ export default function EmailTester() {
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [settingAdmin, setSettingAdmin] = useState(false);
+  const [emailConfig, setEmailConfig] = useState<{ configured: boolean; loading: boolean }>({ configured: false, loading: true });
+
+  useEffect(() => {
+    // Load email configuration status
+    const loadEmailConfig = async () => {
+      try {
+        const response = await fetch('/api/email-config');
+        const data = await response.json();
+        setEmailConfig({
+          configured: data.configured,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error loading email config:', error);
+        setEmailConfig({ configured: false, loading: false });
+      }
+    };
+
+    loadEmailConfig();
+  }, []);
 
   const handleTest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -290,15 +310,22 @@ export default function EmailTester() {
           <h4 className="font-medium mb-2">מידע על התצורה:</h4>
           <div className="text-sm space-y-1">
             <p>
-              <span className="text-gray-400">Mailjet API Key:</span>{' '}
-              {process.env.NEXT_PUBLIC_MAILJET_CONFIGURED ? 
-                <span className="text-green-400">✅ מוגדר</span> : 
+              <span className="text-gray-400">Mailjet API:</span>{' '}
+              {emailConfig.loading ? (
+                <span className="text-gray-400">בודק...</span>
+              ) : emailConfig.configured ? 
+                <span className="text-green-400">✅ מוגדר ופעיל</span> : 
                 <span className="text-red-400">❌ לא מוגדר</span>
               }
             </p>
             <p className="text-xs text-gray-500">
               המערכת תחפש מנהלים ב-Firebase לפי role=&quot;admin&quot; ותשלח להם התראות
             </p>
+            {!emailConfig.loading && !emailConfig.configured && (
+              <p className="text-xs text-yellow-400 mt-2">
+                ⚠️ יש להגדיר MAILJET_API_KEY ו-MAILJET_API_SECRET במשתני הסביבה
+              </p>
+            )}
           </div>
         </div>
       </div>

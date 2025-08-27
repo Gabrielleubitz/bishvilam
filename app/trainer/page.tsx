@@ -150,15 +150,20 @@ export default function TrainerPage() {
           
           // Get user profile for this registration
           try {
-            const userProfileDoc = await getDoc(doc(db, 'profiles', regData.uid));
-            if (userProfileDoc.exists()) {
-              regData.userProfile = userProfileDoc.data() as UserProfile;
-              console.log(`👤 Loaded profile for ${regData.uid}:`, regData.userProfile.firstName, regData.userProfile.lastName);
+            // Check if uid exists and is valid before trying to get the document
+            if (regData.uid && typeof regData.uid === 'string' && regData.uid.trim() !== '') {
+              const userProfileDoc = await getDoc(doc(db, 'profiles', regData.uid));
+              if (userProfileDoc.exists()) {
+                regData.userProfile = userProfileDoc.data() as UserProfile;
+                console.log(`👤 Loaded profile for ${regData.uid}:`, regData.userProfile.firstName, regData.userProfile.lastName);
+              } else {
+                console.log(`❌ No profile found for user ${regData.uid}`);
+              }
             } else {
-              console.log(`❌ No profile found for user ${regData.uid}`);
+              console.warn(`Registration ${regDoc.id} has invalid or missing uid:`, regData.uid);
             }
           } catch (error) {
-            console.error('Error loading user profile:', error);
+            console.error(`Error loading user profile for registration ${regDoc.id} with uid ${regData.uid}:`, error);
           }
 
           registrations.push(regData);
@@ -174,8 +179,8 @@ export default function TrainerPage() {
 
       // Sort events by start date (upcoming first)
       eventsData.sort((a, b) => {
-        const dateA = a.startAt ? new Date(a.startAt).getTime() : 0;
-        const dateB = b.startAt ? new Date(b.startAt).getTime() : 0;
+        const dateA = a.startAt ? a.startAt.getTime() : 0;
+        const dateB = b.startAt ? b.startAt.getTime() : 0;
         return dateA - dateB;
       });
       
@@ -318,7 +323,7 @@ export default function TrainerPage() {
               <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-300">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
-                  <span>{selectedEvent.startAt ? new Date(selectedEvent.startAt).toLocaleDateString('he-IL', {
+                  <span>{selectedEvent.startAt ? selectedEvent.startAt.toLocaleDateString('he-IL', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
@@ -450,7 +455,7 @@ export default function TrainerPage() {
                         <div className="space-y-1 text-sm text-gray-300">
                           <div className="flex items-center gap-2">
                             <Calendar size={16} />
-                            <span>{event.startAt ? new Date(event.startAt).toLocaleDateString('he-IL', {
+                            <span>{event.startAt ? event.startAt.toLocaleDateString('he-IL', {
                               weekday: 'short',
                               day: 'numeric',
                               month: 'short',

@@ -33,6 +33,8 @@ interface Registration {
   registeredAt: any;
   status: 'confirmed' | 'pending' | 'cancelled';
   paymentStatus: 'paid' | 'pending' | 'free';
+  amountPaid?: number;
+  paymentDate?: any;
 }
 
 interface EventWithStats extends Event {
@@ -91,9 +93,13 @@ export default function EventManager() {
         
         const registeredCount = eventRegistrations.length;
         const availableSpots = Math.max(0, event.maxParticipants - registeredCount);
-        const revenue = eventRegistrations.reduce((sum, reg) => 
-          sum + (reg.paymentStatus === 'paid' ? event.price : 0), 0
-        );
+        const revenue = eventRegistrations.reduce((sum, reg) => {
+          if (reg.paymentStatus === 'paid') {
+            // Use actual amount paid if available, otherwise fall back to event price
+            return sum + (reg.amountPaid !== undefined ? reg.amountPaid : event.price);
+          }
+          return sum;
+        }, 0);
 
         return {
           ...event,
@@ -161,16 +167,49 @@ export default function EventManager() {
     }
   };
 
-  const updatePaymentStatus = async (registrationId: string, newPaymentStatus: 'paid' | 'pending' | 'free') => {
+  const updatePaymentStatus = async (registrationId: string, newPaymentStatus: 'paid' | 'pending' | 'free', eventPrice?: number) => {
     try {
       console.log('💰 Updating payment status:', registrationId, 'to', newPaymentStatus);
-      await updateDoc(doc(db, 'registrations', registrationId), {
+      
+      let updateData: any = {
         paymentStatus: newPaymentStatus,
         updatedAt: new Date()
-      });
+      };
+      
+      // If switching to 'paid', ask for the actual amount paid
+      if (newPaymentStatus === 'paid') {
+        const defaultAmount = eventPrice || 0;
+        const amountPaidStr = prompt(
+          `כמה המשתמש שילם בפועל?\n\n` +
+          `מחיר האירוע: ₪${defaultAmount}\n` +
+          `הכנס את הסכום ששולם (או לחץ ביטול):`,
+          defaultAmount.toString()
+        );
+        
+        if (amountPaidStr === null) {
+          // User cancelled
+          return;
+        }
+        
+        const amountPaid = parseFloat(amountPaidStr);
+        if (isNaN(amountPaid) || amountPaid < 0) {
+          alert('נא להזין סכום תקין (מספר חיובי)');
+          return;
+        }
+        
+        updateData.amountPaid = amountPaid;
+        updateData.paymentDate = new Date();
+        console.log('💰 Recording payment amount:', amountPaid);
+      } else if (newPaymentStatus === 'pending' || newPaymentStatus === 'free') {
+        // Clear payment tracking when switching away from paid
+        updateData.amountPaid = null;
+        updateData.paymentDate = null;
+      }
+      
+      await updateDoc(doc(db, 'registrations', registrationId), updateData);
       
       const statusMessages = {
-        'paid': 'התשלום עודכן לשולם ✅',
+        'paid': `התשלום עודכן לשולם ✅${updateData.amountPaid ? ` (₪${updateData.amountPaid})` : ''}`,
         'pending': 'התשלום עודכן לממתין 🟡',
         'free': 'התשלום עודכן לחינם 🆓'
       };
@@ -189,32 +228,52 @@ export default function EventManager() {
     if (!event) return;
 
     if (event.registeredCount > 0) {
-      if (!confirm(`יש ${event.registeredCount} נרשמים לאירוע זה! האם אתה בטוח שברצונך למחוק אותו לצמיתות?\n\nהמלצה: במקום מחיקה, סמן את האירוע כ"הושלם" או "בוטל"`)) return;
+      if (!confirm(`יש ${event.registeredCount} נרשמים לאירוע זה! האם אתה בטוח שברצונך למחוק אותו לצמיתות?\n\nכל ההרשמות לאירוע זה ימחקו גם כן!\n\nהמלצה: במקום מחיקה, סמן את האירוע כ"הושלם" או "בוטל"`)) return;
     } else {
       if (!confirm('האם אתה בטוח שברצונך למחוק את האירוע לצמיתות?')) return;
     }
     
     try {
-      console.log('Deleting event:', eventId);
+      console.log('🗑️ Starting cascade deletion for event:', eventId);
+      
+      // First, delete all registrations for this event
+      const registrationsToDelete = event.registrations;
+      console.log(`🗑️ Found ${registrationsToDelete.length} registrations to delete`);
+      
+      for (const registration of registrationsToDelete) {
+        try {
+          console.log(`🗑️ Deleting registration ${registration.id} for user ${registration.userEmail}`);
+          await deleteDoc(doc(db, 'registrations', registration.id));
+        } catch (regError) {
+          console.error(`❌ Error deleting registration ${registration.id}:`, regError);
+          // Continue with other deletions even if one fails
+        }
+      }
+      
+      // Then delete the event itself
+      console.log('🗑️ Deleting event document:', eventId);
       await deleteDoc(doc(db, 'events', eventId));
       
-      // Note: In production, you might want to also handle associated registrations
+      console.log('✅ Event and all registrations deleted successfully');
+      alert(`האירוع "${event.title}" ו-${registrationsToDelete.length} ההרשמות שלו נמחקו בהצלחה`);
       loadEvents();
     } catch (error) {
-      console.error('Error deleting event:', error);
-      alert('שגיאה במחיקת האירוע: ' + (error as any).message);
+      console.error('❌ Error during cascade deletion:', error);
+      alert('שגיאה במחיקת האירוע וההרשמות: ' + (error as any).message);
     }
   };
 
   const exportAttendees = (event: EventWithStats) => {
     const csvContent = [
-      ['שם', 'אימייל', 'טלפון', 'תאריך הרשמה', 'סטטוס תשלום'],
+      ['שם', 'אימייל', 'טלפון', 'תאריך הרשמה', 'סטטוס תשלום', 'סכום ששולם', 'תאריך תשלום'],
       ...event.registrations.map(reg => [
         reg.userName,
         reg.userEmail, 
         reg.userPhone || '',
         new Date(reg.registeredAt?.toDate?.() || reg.registeredAt).toLocaleDateString('he-IL'),
-        reg.paymentStatus === 'paid' ? 'שולם' : reg.paymentStatus === 'pending' ? 'ממתין' : 'חינם'
+        reg.paymentStatus === 'paid' ? 'שולם' : reg.paymentStatus === 'pending' ? 'ממתין' : 'חינם',
+        reg.paymentStatus === 'paid' && reg.amountPaid !== undefined ? `₪${reg.amountPaid}` : '',
+        reg.paymentStatus === 'paid' && reg.paymentDate ? new Date(reg.paymentDate?.toDate?.() || reg.paymentDate).toLocaleDateString('he-IL') : ''
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -427,120 +486,147 @@ export default function EventManager() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  {/* Registration Management Buttons */}
-                  {event.registeredCount > 0 && (
-                    <>
-                      <button
-                        onClick={() => exportAttendees(event)}
-                        className="p-2 hover:bg-gray-700 rounded text-blue-400"
-                        title="ייצוא רשימת נרשמים"
-                      >
-                        <Download size={18} />
-                      </button>
-                      
-                      <button
-                        onClick={() => sendEventEmail(event)}
-                        className="p-2 hover:bg-gray-700 rounded text-purple-400"
-                        title="שלח אימייל לנרשמים"
-                      >
-                        <Mail size={18} />
-                      </button>
-                    </>
-                  )}
-
-                  {event.publish && (
-                    <a
-                      href={`/events/${encodeURIComponent((event.title || 'event').replace(/\s+/g, '-').toLowerCase())}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 hover:bg-gray-700 rounded text-purple-400"
-                      title="צפה בדף האירוע באתר"
-                    >
-                      <Eye size={18} />
-                    </a>
-                  )}
-
-                  <button
-                    onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
-                    className="p-2 hover:bg-gray-700 rounded text-orange-400"
-                    title={event.registeredCount > 0 ? "הצג נרשמים" : "פרטים נוספים"}
-                  >
-                    {expandedEvent === event.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </button>
-
-                  <button
-                    onClick={() => togglePublish(event.id, event.publish)}
-                    className={`p-2 rounded transition-colors ${
-                      event.publish 
-                        ? 'hover:bg-red-900/50 text-red-400' 
-                        : 'hover:bg-green-900/50 text-green-400'
-                    }`}
-                    title={event.publish ? 'הסתר מהאתר (הפוך לטיוטה)' : 'פרסם באתר'}
-                    disabled={!currentUser}
-                  >
-                    {event.publish ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                  
-                  <button
-                    onClick={() => setEditingEvent(event)}
-                    className="p-2 hover:bg-gray-700 rounded text-blue-400"
-                    title="עריכת אירוע"
-                    disabled={!currentUser}
-                  >
-                    <Edit size={18} />
-                  </button>
-
-                  {/* Status Control Dropdown */}
-                  <div className="relative group">
+                <div className="flex flex-col gap-3">
+                  {/* Primary Actions Row */}
+                  <div className="flex items-center gap-2 justify-end">
                     <button
-                      className="p-2 hover:bg-gray-700 rounded text-yellow-400"
-                      title="שינוי סטטוס אירוע"
+                      onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
+                      className="btn-outline text-sm px-3 py-1.5 flex items-center gap-2"
+                    >
+                      {expandedEvent === event.id ? (
+                        <>
+                          <ChevronUp size={16} />
+                          סגור פרטים
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={16} />
+                          {event.registeredCount > 0 ? `הצג נרשמים (${event.registeredCount})` : 'פרטים נוספים'}
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setEditingEvent(event)}
+                      className="btn text-sm px-3 py-1.5 flex items-center gap-2"
                       disabled={!currentUser}
                     >
-                      <AlertCircle size={18} />
+                      <Edit size={16} />
+                      ערוך
                     </button>
-                    
-                    <div className="absolute left-0 top-full mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all min-w-[160px]">
+                  </div>
+
+                  {/* Secondary Actions Row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {/* Publishing Controls */}
+                      <div className="flex items-center gap-1 bg-gray-800/50 rounded-md p-1">
+                        <button
+                          onClick={() => togglePublish(event.id, event.publish)}
+                          className={`text-xs px-2 py-1 rounded flex items-center gap-1 transition-colors ${
+                            event.publish 
+                              ? 'bg-red-900/50 text-red-300 hover:bg-red-800/50' 
+                              : 'bg-green-900/50 text-green-300 hover:bg-green-800/50'
+                          }`}
+                          disabled={!currentUser}
+                        >
+                          {event.publish ? <EyeOff size={14} /> : <Eye size={14} />}
+                          {event.publish ? 'הסתר' : 'פרסם'}
+                        </button>
+                        
+                        {event.publish && (
+                          <a
+                            href={`/events/${encodeURIComponent((event.title || 'event').replace(/\s+/g, '-').toLowerCase())}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs px-2 py-1 rounded bg-purple-900/50 text-purple-300 hover:bg-purple-800/50 flex items-center gap-1"
+                            title="צפה באתר"
+                          >
+                            <Eye size={14} />
+                            צפה
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Registration Management */}
+                      {event.registeredCount > 0 && (
+                        <div className="flex items-center gap-1 bg-gray-800/50 rounded-md p-1">
+                          <button
+                            onClick={() => exportAttendees(event)}
+                            className="text-xs px-2 py-1 rounded bg-blue-900/50 text-blue-300 hover:bg-blue-800/50 flex items-center gap-1"
+                            title="ייצוא לקובץ CSV"
+                          >
+                            <Download size={14} />
+                            ייצוא
+                          </button>
+                          
+                          <button
+                            onClick={() => sendEventEmail(event)}
+                            className="text-xs px-2 py-1 rounded bg-purple-900/50 text-purple-300 hover:bg-purple-800/50 flex items-center gap-1"
+                            title="שלח אימייל לכל הנרשמים"
+                          >
+                            <Mail size={14} />
+                            מייל
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Status Control Dropdown */}
+                      <div className="relative group">
+                        <button
+                          className="text-xs px-2 py-1 rounded bg-yellow-900/50 text-yellow-300 hover:bg-yellow-800/50 flex items-center gap-1"
+                          disabled={!currentUser}
+                        >
+                          <AlertCircle size={14} />
+                          שנה סטטוס
+                        </button>
+                        
+                        <div className="absolute left-0 top-full mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all min-w-[140px]">
+                          <button
+                            onClick={() => updateEventStatus(event.id, 'active')}
+                            className="w-full text-right px-3 py-2 hover:bg-gray-700 text-green-400 text-xs"
+                            disabled={!currentUser || event.status === 'active'}
+                          >
+                            🎯 הפעל
+                          </button>
+                          <button
+                            onClick={() => updateEventStatus(event.id, 'completed')}
+                            className="w-full text-right px-3 py-2 hover:bg-gray-700 text-blue-400 text-xs"
+                            disabled={!currentUser || event.status === 'completed'}
+                          >
+                            ✅ הושלם
+                          </button>
+                          <button
+                            onClick={() => updateEventStatus(event.id, 'cancelled')}
+                            className="w-full text-right px-3 py-2 hover:bg-gray-700 text-red-400 text-xs"
+                            disabled={!currentUser || event.status === 'cancelled'}
+                          >
+                            ❌ בטל
+                          </button>
+                          <button
+                            onClick={() => updateEventStatus(event.id, 'draft')}
+                            className="w-full text-right px-3 py-2 hover:bg-gray-700 text-gray-400 text-xs"
+                            disabled={!currentUser || event.status === 'draft'}
+                          >
+                            📝 טיוטה
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Delete Button - Separated and More Prominent */}
                       <button
-                        onClick={() => updateEventStatus(event.id, 'active')}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-700 text-green-400 text-sm"
-                        disabled={!currentUser || event.status === 'active'}
+                        onClick={() => deleteEvent(event.id)}
+                        className="text-xs px-2 py-1 rounded bg-red-900/50 text-red-300 hover:bg-red-800/50 flex items-center gap-1"
+                        disabled={!currentUser}
+                        title="מחיקה סופית של האירוע וכל ההרשמות"
                       >
-                        🎯 הפעל אירוע
-                      </button>
-                      <button
-                        onClick={() => updateEventStatus(event.id, 'completed')}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-700 text-blue-400 text-sm"
-                        disabled={!currentUser || event.status === 'completed'}
-                      >
-                        ✅ סמן כהושלם
-                      </button>
-                      <button
-                        onClick={() => updateEventStatus(event.id, 'cancelled')}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-700 text-red-400 text-sm"
-                        disabled={!currentUser || event.status === 'cancelled'}
-                      >
-                        ❌ בטל אירוע
-                      </button>
-                      <button
-                        onClick={() => updateEventStatus(event.id, 'draft')}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-700 text-gray-400 text-sm"
-                        disabled={!currentUser || event.status === 'draft'}
-                      >
-                        📝 העבר לטיוטה
+                        <Trash2 size={14} />
+                        מחק
                       </button>
                     </div>
                   </div>
-                  
-                  <button
-                    onClick={() => deleteEvent(event.id)}
-                    className="p-2 hover:bg-gray-700 rounded text-red-400"
-                    title="מחיקת אירוע (לצמיתות)"
-                    disabled={!currentUser}
-                  >
-                    <Trash2 size={18} />
-                  </button>
                 </div>
               </div>
 
@@ -580,7 +666,7 @@ export default function EventManager() {
                             <div className="text-left">
                               <select
                                 value={registration.paymentStatus}
-                                onChange={(e) => updatePaymentStatus(registration.id, e.target.value as 'paid' | 'pending' | 'free')}
+                                onChange={(e) => updatePaymentStatus(registration.id, e.target.value as 'paid' | 'pending' | 'free', event.price)}
                                 disabled={!currentUser}
                                 className={`text-sm px-2 py-1 rounded border-0 cursor-pointer ${
                                   registration.paymentStatus === 'paid' ? 'bg-green-900/50 text-green-300' :
@@ -593,7 +679,20 @@ export default function EventManager() {
                                 <option value="free">🆓 חינם</option>
                               </select>
                               <div className="text-xs text-gray-400 mt-1">
-                                {new Date(registration.registeredAt?.toDate?.() || registration.registeredAt).toLocaleDateString('he-IL')}
+                                {registration.paymentStatus === 'paid' && registration.amountPaid !== undefined ? (
+                                  <div>
+                                    <span className="text-green-400">₪{registration.amountPaid}</span>
+                                    {registration.paymentDate && (
+                                      <div className="text-gray-500">
+                                        {new Date(registration.paymentDate?.toDate?.() || registration.paymentDate).toLocaleDateString('he-IL')}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div>
+                                    {new Date(registration.registeredAt?.toDate?.() || registration.registeredAt).toLocaleDateString('he-IL')}
+                                  </div>
+                                )}
                               </div>
                             </div>
                             
