@@ -138,33 +138,40 @@ export default function HomePage() {
       <Navbar />
       
       
-      {/* Hero Section */}
-      <section className="relative py-20 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url(${getHeroImage()})`}}>
-        <div className="absolute inset-0 bg-black/60"></div>
-        <div className="section-container text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            כושר קרבי
-          </h1>
-          <p className="text-xl md:text-2xl mb-4 text-gray-200">הכנה לצה״ל בגוש עציון, נס הרים והסביבה!</p>
-          <p className="text-lg mb-2 text-gray-300 max-w-2xl mx-auto">
-            כושר קרבי, אימונים אישיים, ערכים של לוחם, פיתוח יכולות, וחוסן מנטלי לזכר:
-          </p>
-          <p className="text-lg font-bold mb-8 text-gray-300 max-w-2xl mx-auto">
-            • דותן שמעון ז&quot;ל • נטע כהנא ז&quot;ל • נווה לשם ז&quot;ל
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/events" className="btn text-lg px-8 py-4">
-              צפייה באירועים
-            </Link>
-            <Link href="/about" className="btn-outline text-lg px-8 py-4">
-              למידע נוסף
-            </Link>
-            <Link href="/lizchram" className="btn-outline border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black text-lg px-8 py-4">
-              לזכרם
-            </Link>
-          </div>
-        </div>
-      </section>
+    {/* Hero Section */}
+<section className="relative py-20 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `url(${getHeroImage()})`}}>
+  <div className="absolute inset-0 bg-black/60"></div>
+  <div className="section-container text-center relative z-10">
+    <h1 className="text-4xl md:text-6xl font-black mb-6 uppercase tracking-wider" 
+        style={{textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000'}}>
+      כושר קרבי
+    </h1>
+    
+    <p className="text-xl md:text-2xl mb-4 text-gray-200 font-bold uppercase tracking-wide">
+      הכנה לצה״ל בגוש עציון, נס הרים והסביבה!
+    </p>
+    
+    <p className="text-lg mb-2 text-gray-300 max-w-2xl mx-auto">
+      כושר קרבי, אימונים אישיים, ערכים של לוחם, פיתוח יכולות, וחוסן מנטלי לזכר:
+    </p>
+    
+    <p className="text-lg font-bold mb-8 text-gray-300 max-w-2xl mx-auto">
+      • דותן שמעון ז&quot;ל • נטע כהנא ז&quot;ל • נווה לשם ז&quot;ל
+    </p>
+    
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <Link href="/events" className="btn text-lg px-8 py-4">
+        צפייה באירועים
+      </Link>
+      <Link href="/about" className="btn-outline text-lg px-8 py-4">
+        למידע נוסף
+      </Link>
+      <Link href="/lizchram" className="btn-outline border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black text-lg px-8 py-4">
+        לזכרם
+      </Link>
+    </div>
+  </div>
+</section>
 
       {/* Features Section */}
       <section className="py-16 bg-gray-900/50">
