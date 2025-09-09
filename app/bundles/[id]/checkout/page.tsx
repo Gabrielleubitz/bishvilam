@@ -205,7 +205,7 @@ export default function BundleCheckoutPage() {
       // Check if bundle has expired
       if (bundleData.validUntil) {
         try {
-          const expiryDate = bundleData.validUntil.toDate ? bundleData.validUntil.toDate() : new Date(bundleData.validUntil);
+          const expiryDate = (bundleData.validUntil as any).toDate ? (bundleData.validUntil as any).toDate() : new Date(bundleData.validUntil as any);
           if (expiryDate < new Date()) {
             console.log('❌ Bundle has expired');
             alert('תוקף החבילה פג');
@@ -312,7 +312,7 @@ export default function BundleCheckoutPage() {
       let detailsMessage = `📋 פרטי הרשמה:\n• נרשמת ל-${eventCount} אירועים\n• סטטוס: ממתין לאישור תשלום\n• מנהל המערכת יאשר את התשלום בקרוב`;
       
       if (skippedCount > 0) {
-        detailsMessage += `\n\n⚠️ ${skippedCount} אירועים דולגו:\n${result.skippedEvents.map(se => `• ${se.eventTitle} - ${se.reason}`).join('\n')}`;
+        detailsMessage += `\n\n⚠️ ${skippedCount} אירועים דולגו:\n${result.skippedEvents.map((se: any) => `• ${se.eventTitle} - ${se.reason}`).join('\n')}`;
       }
       
       alert(`🎉 ${successMessage}\n\n${detailsMessage}\n\n✉️ נשלח לך מייל אישור עם כל פרטי האירועים בחבילה!`);
@@ -367,7 +367,7 @@ export default function BundleCheckoutPage() {
   let isExpiringSoon = false;
   if (bundle.validUntil) {
     try {
-      const expiryDate = bundle.validUntil.toDate ? bundle.validUntil.toDate() : new Date(bundle.validUntil);
+      const expiryDate = (bundle.validUntil as any).toDate ? (bundle.validUntil as any).toDate() : new Date(bundle.validUntil as any);
       isExpiringSoon = expiryDate.getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000;
     } catch (error) {
       console.warn('⚠️ Could not parse bundle expiry date for expiration check:', bundle.validUntil);
@@ -523,7 +523,7 @@ export default function BundleCheckoutPage() {
                                       <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
                                         <span className="flex items-center gap-1">
                                           <Calendar size={14} />
-                                          {formatDate(event.date || event.startAt)}
+                                          {formatDate((event as any).date || (event as any).startAt)}
                                         </span>
                                         <span className="flex items-center gap-1">
                                           <MapPin size={14} />
@@ -551,7 +551,7 @@ export default function BundleCheckoutPage() {
                                       <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
                                         <span className="flex items-center gap-1">
                                           <Calendar size={14} />
-                                          {formatDate(event.date || event.startAt)}
+                                          {formatDate((event as any).date || (event as any).startAt)}
                                         </span>
                                         <span className="flex items-center gap-1">
                                           <MapPin size={14} />
@@ -736,7 +736,7 @@ export default function BundleCheckoutPage() {
                           <div className="flex items-center gap-3 text-xs text-gray-400">
                             <div className="flex items-center gap-1">
                               <Calendar size={12} />
-                              <span>{formatDate(event.date || event.startAt)}</span>
+                              <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin size={12} />
@@ -754,7 +754,7 @@ export default function BundleCheckoutPage() {
                           <div className="flex items-center gap-3 text-xs text-gray-400">
                             <div className="flex items-center gap-1">
                               <Calendar size={12} />
-                              <span>{formatDate(event.date || event.startAt)}</span>
+                              <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin size={12} />

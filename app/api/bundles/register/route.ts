@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     console.log('👤 User profile found:', userProfile ? true : false);
     
     const userName = userProfile ? 
-      `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || decodedToken.email?.split('@')[0] :
+      `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || decodedToken.email?.split('@')[0] || 'Bundle User' :
       decodedToken.email?.split('@')[0] || 'Bundle User';
     const userEmail = decodedToken.email || userProfile?.email || '';
     const userPhone = userProfile?.phone || '';

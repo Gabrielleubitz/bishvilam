@@ -308,7 +308,7 @@ export default function BundleReceiptPage() {
       ``,
       `אירועים שנרשמת אליהם:`,
       ...registeredEvents.map(event => 
-        `• ${event.title} - ${formatDate(event.date || event.startAt)} - ${event.locationName}`
+        `• ${event.title} - ${formatDate((event as any).date || (event as any).startAt)} - ${event.locationName}`
       ),
       ``,
       ...(replacedEvents.length > 0 ? [
@@ -476,7 +476,7 @@ export default function BundleReceiptPage() {
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <div className="flex items-center gap-1">
                             <Calendar size={14} />
-                            <span>{formatDate(event.date || event.startAt)}</span>
+                            <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
@@ -504,7 +504,7 @@ export default function BundleReceiptPage() {
                           <div className="flex items-center gap-4 text-sm text-gray-400">
                             <div className="flex items-center gap-1">
                               <Calendar size={14} />
-                              <span>{formatDate(event.date || event.startAt)}</span>
+                              <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock size={14} />
@@ -631,7 +631,7 @@ export default function BundleReceiptPage() {
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar size={14} />
-                            <span>{formatDate(event.date || event.startAt)}</span>
+                            <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <MapPin size={14} />
