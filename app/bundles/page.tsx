@@ -118,7 +118,7 @@ export default function BundlesPage() {
         // Skip expired bundles
         if (bundleData.validUntil) {
           try {
-            const expiryDate = bundleData.validUntil.toDate ? bundleData.validUntil.toDate() : new Date(bundleData.validUntil);
+            const expiryDate = (bundleData.validUntil as any).toDate ? (bundleData.validUntil as any).toDate() : new Date(bundleData.validUntil as any);
             if (expiryDate < new Date()) {
               continue;
             }
@@ -155,8 +155,8 @@ export default function BundlesPage() {
       
       setBundles(bundlesWithEvents.sort((a, b) => {
         try {
-          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+          const dateA = (a.createdAt as any)?.toDate ? (a.createdAt as any).toDate() : new Date((a.createdAt as any) || 0);
+          const dateB = (b.createdAt as any)?.toDate ? (b.createdAt as any).toDate() : new Date((b.createdAt as any) || 0);
           return dateB.getTime() - dateA.getTime();
         } catch (error) {
           return 0;
@@ -261,7 +261,7 @@ function BundleCard({ bundle, onPurchase, isLoggedIn }: {
   let isExpiringSoon = false;
   if (bundle.validUntil) {
     try {
-      const expiryDate = bundle.validUntil.toDate ? bundle.validUntil.toDate() : new Date(bundle.validUntil);
+      const expiryDate = (bundle.validUntil as any).toDate ? (bundle.validUntil as any).toDate() : new Date(bundle.validUntil as any);
       isExpiringSoon = expiryDate.getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000; // 7 days
     } catch (error) {
       console.warn('⚠️ Could not parse bundle expiry date for expiration check:', bundle.validUntil);
@@ -333,7 +333,7 @@ function BundleCard({ bundle, onPurchase, isLoggedIn }: {
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <div className="flex items-center gap-1">
                   <Calendar size={12} />
-                  <span>{formatDate(event.date || event.startAt)}</span>
+                  <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin size={12} />
@@ -357,7 +357,7 @@ function BundleCard({ bundle, onPurchase, isLoggedIn }: {
                 <div className="flex items-center gap-4 text-xs text-gray-400">
                   <div className="flex items-center gap-1">
                     <Calendar size={12} />
-                    <span>{formatDate(event.date || event.startAt)}</span>
+                    <span>{formatDate((event as any).date || (event as any).startAt)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MapPin size={12} />

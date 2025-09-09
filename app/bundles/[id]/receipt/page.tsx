@@ -480,7 +480,7 @@ export default function BundleReceiptPage() {
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
-                            <span>{formatTime(event.date || event.startAt)}</span>
+                            <span>{formatTime((event as any).date || (event as any).startAt)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <MapPin size={14} />
@@ -508,7 +508,7 @@ export default function BundleReceiptPage() {
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock size={14} />
-                              <span>{formatTime(event.date || event.startAt)}</span>
+                              <span>{formatTime((event as any).date || (event as any).startAt)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin size={14} />
@@ -558,11 +558,11 @@ export default function BundleReceiptPage() {
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <div className="flex items-center gap-1">
                             <Calendar size={14} />
-                            <span>{formatDate(replacement.date || replacement.startAt)}</span>
+                            <span>{formatDate((replacement as any).date || (replacement as any).startAt)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock size={14} />
-                            <span>{formatTime(replacement.date || replacement.startAt)}</span>
+                            <span>{formatTime((replacement as any).date || (replacement as any).startAt)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <MapPin size={14} />
@@ -590,11 +590,11 @@ export default function BundleReceiptPage() {
                           <div className="flex items-center gap-4 text-sm text-gray-400">
                             <div className="flex items-center gap-1">
                               <Calendar size={14} />
-                              <span>{formatDate(replacement.date || replacement.startAt)}</span>
+                              <span>{formatDate((replacement as any).date || (replacement as any).startAt)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock size={14} />
-                              <span>{formatTime(replacement.date || replacement.startAt)}</span>
+                              <span>{formatTime((replacement as any).date || (replacement as any).startAt)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin size={14} />

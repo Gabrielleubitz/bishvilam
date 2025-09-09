@@ -114,7 +114,7 @@ export default function AboutPage() {
                   הביטחון העצמי ויכולת העבודה בצוות שכה חשובים בשירות הצבאי.
                 </p>
                 <p>
-                  עד היום עברו דרכנו מאות צעירים שהתקבלו ליחידות איכות ברחבי צה״ל וממשיכים להוות מקור גאווה עבורנו.
+                  עד היום עברו דרכנו מאות צעירים שהתקבלו ליחידות איכות ברחבי צה&quot;ל וממשיכים להוות מקור גאווה עבורנו.
                 </p>
               </div>
             </div>
@@ -411,7 +411,7 @@ export default function AboutPage() {
             
             <div className="card">
               <Mail className="mx-auto mb-4 text-brand-green" size={32} />
-              <h3 className="font-semibold mb-2">דוא״ל</h3>
+              <h3 className="font-semibold mb-2">דוא&quot;ל</h3>
               <p className="text-gray-300">
                 info@kosherkravi.co.il<br />
                 registrations@kosherkravi.co.il<br />

@@ -162,7 +162,7 @@ export default function TeamManager() {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold mb-2">ניהול חברי הצוות</h2>
-        <p className="text-gray-400">נהל את פרטי חברי הצוות שמוצגים בעמוד &ldquo;אודות&rdquo;</p>
+        <p className="text-gray-400">נהל את פרטי חברי הצוות שמוצגים בעמוד &quot;אודות&quot;</p>
       </div>
 
       {/* Stats */}
