@@ -1,12 +1,86 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase.client';
 import Navbar from '@/components/Navbar';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
-import { Shield, Users, Target, Award, MapPin, Phone, Mail } from 'lucide-react';
+import { Shield, Users, Target, Award, MapPin, Phone, Mail, UserCircle } from 'lucide-react';
 import { useMedia } from '@/hooks/useMedia';
+
+interface TeamMember {
+  id: string;
+  name: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+}
 
 export default function AboutPage() {
   const { getGalleryImages } = useMedia();
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loadingTeam, setLoadingTeam] = useState(true);
+
+  useEffect(() => {
+    loadTeamMembers();
+  }, []);
+
+  const loadTeamMembers = async () => {
+    try {
+      setLoadingTeam(true);
+      
+      const teamQuery = query(
+        collection(db, 'teamMembers'),
+        orderBy('order', 'asc')
+      );
+      const teamSnapshot = await getDocs(teamQuery);
+      const teamData = teamSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || '',
+          title: data.title || '',
+          description: data.description || '',
+          imageUrl: data.imageUrl || '',
+          order: data.order || 0
+        } as TeamMember;
+      });
+
+      setTeamMembers(teamData);
+    } catch (error) {
+      console.error('Error loading team members:', error);
+      // Fallback to default team members
+      setTeamMembers([
+        {
+          id: '1',
+          name: 'יוחאי קיל',
+          title: 'מנהל ומייסד',
+          description: 'לוחם ומ״כ בגולני לשעבר, מדריך כושר מוסמך עם 8 שנות ניסיון בהדרכת צעירים',
+          imageUrl: '',
+          order: 1
+        },
+        {
+          id: '2',
+          name: 'דני לוי',
+          title: 'מדריך ראשי',
+          description: 'קצין לשעבר ביחידה מובחרת, מתמחה באימוני סיבולת ומסלולי מכשולים',
+          imageUrl: '',
+          order: 2
+        },
+        {
+          id: '3',
+          name: 'רועי אברהם',
+          title: 'מדריך ניווט',
+          description: 'לוחם יחידת קומנדו לשעבר, מדריך ניווט וכיווניות עם התמחות בשטח הרי יהודה',
+          imageUrl: '',
+          order: 3
+        }
+      ]);
+    } finally {
+      setLoadingTeam(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -85,34 +159,60 @@ export default function AboutPage() {
       <section className="py-16 bg-gray-900/50">
         <div className="section-container">
           <h2 className="text-3xl font-bold text-center mb-12">הצוות שלנו</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="card text-center">
-              <div className="w-24 h-24 bg-gray-700 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-xl mb-2"> יוחאי קיל</h3>
-              <p className="text-brand-green mb-3">מנהל ומייסד</p>
-              <p className="text-gray-400 text-sm">
-                לוחם ומ״כ בגולני לשעבר, מדריך כושר מוסמך עם 8 שנות ניסיון בהדרכת צעירים
-              </p>
+          
+          {loadingTeam ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-green"></div>
+              <span className="ml-3">טוען נתוני צוות...</span>
             </div>
-            
-            <div className="card text-center">
-              <div className="w-24 h-24 bg-gray-700 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-xl mb-2">דני לוי</h3>
-              <p className="text-brand-green mb-3">מדריך ראשי</p>
-              <p className="text-gray-400 text-sm">
-                קצין לשעבר ביחידה מובחרת, מתמחה באימוני סיבולת ומסלולי מכשולים
-              </p>
+          ) : (
+            <div className={`grid gap-8 ${teamMembers.length <= 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'md:grid-cols-3'}`}>
+              {teamMembers.map((member) => (
+                <div key={member.id} className="card text-center">
+                  {member.imageUrl ? (
+                    <img
+                      src={member.imageUrl}
+                      alt={member.name}
+                      className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-brand-green/30"
+                      onError={(e) => {
+                        // Fallback to gray circle if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling;
+                        if (fallback) {
+                          (fallback as HTMLElement).style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-700 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <UserCircle className="text-gray-400" size={48} />
+                    </div>
+                  )}
+                  {member.imageUrl && (
+                    <div 
+                      className="w-24 h-24 bg-gray-700 rounded-full mx-auto mb-4 items-center justify-center" 
+                      style={{ display: 'none' }}
+                    >
+                      <UserCircle className="text-gray-400" size={48} />
+                    </div>
+                  )}
+                  <h3 className="font-semibold text-xl mb-2">{member.name}</h3>
+                  <p className="text-brand-green mb-3">{member.title}</p>
+                  {member.description && (
+                    <p className="text-gray-400 text-sm">{member.description}</p>
+                  )}
+                </div>
+              ))}
             </div>
-            
-            <div className="card text-center">
-              <div className="w-24 h-24 bg-gray-700 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-xl mb-2">רועי אברהם</h3>
-              <p className="text-brand-green mb-3">מדריך ניווט</p>
-              <p className="text-gray-400 text-sm">
-                לוחם יחידת קומנדו לשעבר, מדריך ניווט וכיווניות עם התמחות בשטח הרי יהודה
-              </p>
+          )}
+          
+          {!loadingTeam && teamMembers.length === 0 && (
+            <div className="text-center text-gray-400 py-12">
+              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p>נתוני הצוות לא זמינים כרגע</p>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

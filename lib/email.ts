@@ -431,6 +431,183 @@ ${reason ? `סיבת הביטול: ${reason}` : ''}
     `
   }),
 
+  // Bundle registration confirmation email for users
+  bundleRegistration: (
+    bundleTitle: string, 
+    registeredEvents: Array<{ eventTitle: string; eventDate: string; eventLocation: string; status: string }>,
+    skippedEvents: Array<{ eventTitle: string; reason: string }>,
+    bundlePrice: number,
+    paymentStatus: string
+  ): EmailTemplate => ({
+    subject: `אישור רכישת חבילה - ${bundleTitle}`,
+    textContent: `שלום,
+
+רכישת החבילה "${bundleTitle}" התקבלה בהצלחה!
+
+פרטי החבילה:
+💰 מחיר: ₪${bundlePrice}
+📊 סטטוס תשלום: ${paymentStatus === 'pending' ? 'ממתין לאישור' : paymentStatus === 'paid' ? 'אושר' : paymentStatus}
+
+האירועים שנרשמת אליהם:
+${registeredEvents.map(event => `✅ ${event.eventTitle}
+   📅 ${event.eventDate}
+   📍 ${event.eventLocation}
+   ${event.status === 'replaced' ? '🔄 (הוחלף באירוע זה)' : ''}`).join('\n\n')}
+
+${skippedEvents.length > 0 ? `
+אירועים שדולגו:
+${skippedEvents.map(skipped => `❌ ${skipped.eventTitle}
+   סיבה: ${skipped.reason === 'completed' ? 'האירוע הסתיים' : 
+           skipped.reason === 'cancelled' ? 'האירוע בוטל' : 
+           skipped.reason === 'full' ? 'אין מקום' : skipped.reason}`).join('\n\n')}
+` : ''}
+
+${paymentStatus === 'pending' ? 'מנהל המערכת יאשר את התשלום בקרוב ויעדכן אותך.' : ''}
+
+נתראה באימונים!
+
+בברכה,
+צוות בישבילם`,
+    htmlContent: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #2563eb;">🎉 רכישת חבילה אושרה!</h2>
+        
+        <p>שלום,</p>
+        
+        <p>רכישת החבילה "<strong>${bundleTitle}</strong>" התקבלה בהצלחה!</p>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #e2e8f0;">
+          <h3 style="margin-top: 0; color: #1e40af;">פרטי החבילה:</h3>
+          <p><strong>💰 מחיר:</strong> ₪${bundlePrice}</p>
+          <p><strong>📊 סטטוס תשלום:</strong> <span style="color: ${paymentStatus === 'paid' ? '#10b981' : '#f59e0b'};">${paymentStatus === 'pending' ? 'ממתין לאישור' : paymentStatus === 'paid' ? 'אושר' : paymentStatus}</span></p>
+        </div>
+        
+        <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #10b981;">
+          <h3 style="margin-top: 0; color: #065f46;">האירועים שנרשמת אליהם:</h3>
+          ${registeredEvents.map(event => `
+            <div style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0; border: 1px solid #d1d5db;">
+              <h4 style="margin: 0 0 10px 0; color: #1f2937;">✅ ${event.eventTitle}</h4>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>📅 תאריך:</strong> ${event.eventDate}</p>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>📍 מיקום:</strong> ${event.eventLocation}</p>
+              ${event.status === 'replaced' ? '<p style="margin: 5px 0; color: #f59e0b; font-weight: bold;">🔄 הוחלף באירוע זה</p>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        
+        ${skippedEvents.length > 0 ? `
+        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #f59e0b;">
+          <h3 style="margin-top: 0; color: #92400e;">אירועים שדולגו:</h3>
+          ${skippedEvents.map(skipped => `
+            <div style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0; border: 1px solid #e5e7eb;">
+              <h4 style="margin: 0 0 5px 0; color: #dc2626;">❌ ${skipped.eventTitle}</h4>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>סיבה:</strong> ${skipped.reason === 'completed' ? 'האירוע הסתיים' : 
+                                                                                   skipped.reason === 'cancelled' ? 'האירוע בוטל' : 
+                                                                                   skipped.reason === 'full' ? 'אין מקום' : skipped.reason}</p>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+        
+        ${paymentStatus === 'pending' ? `
+        <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #3b82f6;">
+          <p style="margin: 0; color: #1e40af;"><strong>ℹ️ מנהל המערכת יאשר את התשלום בקרוב ויעדכן אותך.</strong></p>
+        </div>
+        ` : ''}
+        
+        <p>נתראה באימונים!</p>
+        
+        <p style="margin-top: 30px;">
+          בברכה,<br>
+          <strong>צוות בישבילם</strong>
+        </p>
+      </div>
+    `
+  }),
+
+  // Admin notification for new bundle registration
+  adminBundleRegistration: (
+    userName: string,
+    userEmail: string, 
+    userPhone: string,
+    bundleTitle: string,
+    bundlePrice: number,
+    registeredEvents: Array<{ eventTitle: string; eventId: string }>,
+    skippedEvents: Array<{ eventTitle: string; reason: string }>,
+    registrationId: string
+  ): EmailTemplate => ({
+    subject: `📦 הרשמה חדשה לחבילה - ${bundleTitle}`,
+    textContent: `התקבלה הרשמה חדשה לחבילה:
+
+פרטי המשתמש:
+• שם: ${userName}
+• אימייל: ${userEmail}
+• טלפון: ${userPhone || 'לא צוין'}
+
+פרטי החבילה:
+• שם החבילה: ${bundleTitle}
+• מחיר: ₪${bundlePrice}
+• מספר רשמה: ${registrationId}
+
+האירועים שהמשתמש נרשם אליהם:
+${registeredEvents.map(event => `✅ ${event.eventTitle} (${event.eventId})`).join('\n')}
+
+${skippedEvents.length > 0 ? `
+אירועים שדולגו:
+${skippedEvents.map(skipped => `❌ ${skipped.eventTitle} - ${skipped.reason}`).join('\n')}
+` : ''}
+
+ניתן לצפות ולנהל את ההרשמות בפאנל הניהול.
+
+מערכת בישבילם`,
+    htmlContent: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #8b5cf6;">📦 הרשמה חדשה לחבילה</h2>
+        
+        <p>התקבלה הרשמה חדשה לחבילה:</p>
+        
+        <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #3b82f6;">
+          <h3 style="margin-top: 0; color: #1e40af;">פרטי המשתמש:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px;"><strong>שם:</strong> ${userName}</li>
+            <li style="margin-bottom: 8px;"><strong>אימייל:</strong> ${userEmail}</li>
+            <li style="margin-bottom: 8px;"><strong>טלפון:</strong> ${userPhone || 'לא צוין'}</li>
+          </ul>
+        </div>
+        
+        <div style="background: #f3e8ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #8b5cf6;">
+          <h3 style="margin-top: 0; color: #6b21a8;">פרטי החבילה:</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px;"><strong>שם החבילה:</strong> ${bundleTitle}</li>
+            <li style="margin-bottom: 8px;"><strong>מחיר:</strong> ₪${bundlePrice}</li>
+            <li style="margin-bottom: 8px;"><strong>מספר הרשמה:</strong> ${registrationId}</li>
+          </ul>
+        </div>
+        
+        <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #10b981;">
+          <h3 style="margin-top: 0; color: #065f46;">האירועים שהמשתמש נרשם אליהם:</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${registeredEvents.map(event => `<li style="margin-bottom: 8px;">✅ <strong>${event.eventTitle}</strong> (${event.eventId})</li>`).join('')}
+          </ul>
+        </div>
+        
+        ${skippedEvents.length > 0 ? `
+        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-right: 4px solid #f59e0b;">
+          <h3 style="margin-top: 0; color: #92400e;">אירועים שדולגו:</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${skippedEvents.map(skipped => `<li style="margin-bottom: 8px;">❌ <strong>${skipped.eventTitle}</strong> - ${skipped.reason}</li>`).join('')}
+          </ul>
+        </div>
+        ` : ''}
+        
+        <p>ניתן לצפות ולנהל את ההרשמות בפאנל הניהול.</p>
+        
+        <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+          מערכת בישבילם
+        </p>
+      </div>
+    `
+  }),
+
   // Announcement email template
   announcement: (title: string, content: string, type: 'info' | 'warning' | 'success' | 'urgent'): EmailTemplate => {
     const getTypeEmoji = (announcementType: string) => {

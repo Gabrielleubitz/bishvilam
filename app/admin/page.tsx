@@ -13,7 +13,9 @@ import EmailTester from '@/components/admin/EmailTester';
 import AnnouncementManager from '@/components/admin/AnnouncementManager';
 import PastEventsManager from '@/components/admin/PastEventsManager';
 import EventAttendanceChecker from '@/components/admin/EventAttendanceChecker';
-import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown, RefreshCw, ClipboardCheck } from 'lucide-react';
+import BundleManager from '@/components/admin/BundleManager';
+import TeamManager from '@/components/admin/TeamManager';
+import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown, RefreshCw, ClipboardCheck, Package, UserCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -155,6 +157,7 @@ export default function AdminDashboard() {
       icon: Calendar,
       items: [
         { id: 'events', label: 'אירועים פעילים', icon: Calendar },
+        { id: 'bundles', label: 'חבילות אירועים', icon: Package },
         { id: 'attendance', label: 'בדיקת נוכחות', icon: ClipboardCheck },
         { id: 'past-events', label: 'אירועי עבר', icon: History }
       ]
@@ -183,7 +186,8 @@ export default function AdminDashboard() {
       label: 'ניהול תוכן',
       icon: Settings,
       items: [
-        { id: 'media', label: 'מדיה וגלריה', icon: Image }
+        { id: 'media', label: 'מדיה וגלריה', icon: Image },
+        { id: 'team', label: 'צוות החברה', icon: UserCircle }
       ]
     }
   ];
@@ -361,6 +365,7 @@ export default function AdminDashboard() {
                   />
                 )}
                 {activeTab === 'events' && <EventManager />}
+                {activeTab === 'bundles' && <BundleManager />}
                 {activeTab === 'attendance' && <EventAttendanceChecker />}
                 {activeTab === 'past-events' && <PastEventsManager />}
                 {activeTab === 'users' && <UserManager />}
@@ -369,6 +374,7 @@ export default function AdminDashboard() {
                 {activeTab === 'whatsapp' && <WhatsAppGroupManager />}
                 {activeTab === 'email' && <EmailTester />}
                 {activeTab === 'media' && <MediaManager />}
+                {activeTab === 'team' && <TeamManager />}
               </div>
             </div>
           </div>

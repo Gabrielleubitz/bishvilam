@@ -223,6 +223,27 @@ export default function EventManager() {
     }
   };
 
+  const removeRegistration = async (registrationId: string, userName: string, eventTitle: string) => {
+    const confirmMessage = `האם אתה בטוח שברצונך למחוק את ההרשמה?\n\nמשתמש: ${userName}\nאירוע: ${eventTitle}\n\nפעולה זו אינה הפיכה!`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    try {
+      console.log('🗑️ Removing registration:', registrationId);
+      
+      await deleteDoc(doc(db, 'registrations', registrationId));
+      
+      console.log('✅ Registration removed successfully');
+      alert(`ההרשמה של ${userName} נמחקה בהצלחה ✅`);
+      loadEvents(); // Reload to show updated registrations
+    } catch (error) {
+      console.error('❌ Error removing registration:', error);
+      alert('שגיאה במחיקת ההרשמה: ' + (error as any).message);
+    }
+  };
+
   const deleteEvent = async (eventId: string) => {
     const event = events.find(e => e.id === eventId);
     if (!event) return;
@@ -714,6 +735,16 @@ export default function EventManager() {
                                   <Phone size={14} />
                                 </a>
                               )}
+                              
+                              {/* Remove Registration Button */}
+                              <button
+                                onClick={() => removeRegistration(registration.id, registration.userName, event.title)}
+                                disabled={!currentUser}
+                                className="p-1.5 hover:bg-gray-700 rounded text-red-400 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="מחק הרשמה"
+                              >
+                                <X size={14} />
+                              </button>
                             </div>
                           </div>
                         </div>

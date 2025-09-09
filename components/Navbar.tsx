@@ -60,6 +60,9 @@ export default function Navbar() {
             <Link href="/events" className="hover:text-brand-green transition-colors">
               אירועים
             </Link>
+            <Link href="/bundles" className="hover:text-purple-400 transition-colors">
+              חבילות
+            </Link>
             <Link href="/about" className="hover:text-brand-green transition-colors">
               עלינו
             </Link>
@@ -120,6 +123,9 @@ export default function Navbar() {
               </Link>
               <Link href="/events" className="hover:text-brand-green transition-colors" onClick={() => setIsMenuOpen(false)}>
                 אירועים
+              </Link>
+              <Link href="/bundles" className="hover:text-purple-400 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                חבילות
               </Link>
               <Link href="/about" className="hover:text-brand-green transition-colors" onClick={() => setIsMenuOpen(false)}>
                 עלינו

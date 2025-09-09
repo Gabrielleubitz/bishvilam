@@ -74,3 +74,46 @@ export interface Consent {
   ip: string;
   docUrl?: string;
 }
+
+export interface Bundle {
+  id: string;
+  title: string;
+  description: string;
+  priceNis: number;
+  eventIds: string[];
+  replacementEventIds?: string[];
+  publish: boolean;
+  status?: 'active' | 'draft' | 'expired';
+  validUntil?: Date;
+  createdAt: Date;
+  createdBy: string;
+  updatedAt?: Date;
+}
+
+export interface BundleRegistration {
+  id: string;
+  bundleId: string;
+  uid: string;
+  status: 'pending' | 'paid' | 'cancelled';
+  paymentStatus?: 'paid' | 'pending' | 'free';
+  amountPaid?: number;
+  paymentDate?: Date;
+  paymentIntentId?: string;
+  eventRegistrations: BundleEventRegistration[];
+  skippedEvents?: SkippedEventInfo[];
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+export interface BundleEventRegistration {
+  eventId: string;
+  registrationId: string;
+  status: 'registered' | 'replaced' | 'skipped';
+  replacementEventId?: string;
+}
+
+export interface SkippedEventInfo {
+  originalEventId: string;
+  reason: 'completed' | 'cancelled' | 'full' | 'no_replacement';
+  eventTitle: string;
+}
