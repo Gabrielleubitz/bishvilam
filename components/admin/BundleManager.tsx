@@ -187,6 +187,41 @@ export default function BundleManager() {
     }
   };
 
+  const removeBundleRegistration = async (bundleRegistration: BundleRegistration, userName: string, bundleTitle: string) => {
+    const confirmMessage = `האם אתה בטוח שברצונך למחוק את רכישת החבילה?\n\nמשתמש: ${userName}\nחבילה: ${bundleTitle}\n\nפעולה זו תמחק גם את כל ההרשמות לאירועים בחבילה זו!\nפעולה זו אינה הפיכה!`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    try {
+      console.log('🗑️ Removing bundle registration:', bundleRegistration.id);
+      console.log('🗑️ Also removing event registrations:', bundleRegistration.eventRegistrations.map(er => er.registrationId));
+      
+      // Delete all associated event registrations
+      for (const eventReg of bundleRegistration.eventRegistrations) {
+        if (eventReg.registrationId && eventReg.status === 'registered') {
+          try {
+            await deleteDoc(doc(db, 'registrations', eventReg.registrationId));
+            console.log('✅ Deleted event registration:', eventReg.registrationId);
+          } catch (error) {
+            console.warn('⚠️ Could not delete event registration (might already be deleted):', eventReg.registrationId, error);
+          }
+        }
+      }
+      
+      // Delete the bundle registration
+      await deleteDoc(doc(db, 'bundleRegistrations', bundleRegistration.id));
+      
+      console.log('✅ Bundle registration removed successfully');
+      alert(`רכישת החבילה של ${userName} נמחקה בהצלחה ✅\n\nגם ${bundleRegistration.eventRegistrations.length} הרשמות לאירועים נמחקו`);
+      loadData(); // Reload to show updated registrations
+    } catch (error) {
+      console.error('❌ Error removing bundle registration:', error);
+      alert('שגיאה במחיקת רכישת החבילה: ' + (error as any).message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -523,6 +558,16 @@ export default function BundleManager() {
                                   )}
                                 </div>
                               </div>
+                              
+                              {/* Delete Registration Button */}
+                              <button
+                                onClick={() => removeBundleRegistration(registration, (registration as any).userName || 'משתמש', bundle.title)}
+                                disabled={!currentUser}
+                                className="p-1.5 hover:bg-gray-700 rounded text-red-400 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="מחק רכישת חבילה"
+                              >
+                                <X size={14} />
+                              </button>
                             </div>
                           </div>
                         );
