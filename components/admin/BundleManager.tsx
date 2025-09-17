@@ -639,7 +639,63 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
     }
   };
 
-  const activeEvents = events.filter(e => e.publish && (!e.status || e.status === 'active'));
+  // Get selected events to determine compatible groups
+  const selectedEvents = events.filter(e => formData.eventIds.includes(e.id));
+  
+  // Determine which groups are compatible with currently selected events
+  const getCompatibleGroups = (): string[] => {
+    if (selectedEvents.length === 0) {
+      // No events selected, all groups are compatible
+      return [];
+    }
+    
+    // Find intersection of groups from all selected events
+    let compatibleGroups = selectedEvents[0]?.groups || ['ALL'];
+    
+    for (const event of selectedEvents) {
+      const eventGroups = event.groups || ['ALL'];
+      if (eventGroups.includes('ALL') || compatibleGroups.includes('ALL')) {
+        // If any event is for ALL groups, bundle must be for ALL
+        compatibleGroups = ['ALL'];
+      } else {
+        // Find intersection of group arrays
+        compatibleGroups = compatibleGroups.filter(group => 
+          eventGroups.includes(group)
+        );
+      }
+    }
+    
+    return compatibleGroups;
+  };
+  
+  const compatibleGroups = getCompatibleGroups();
+  
+  // Filter events that are compatible with the bundle's target groups
+  const activeEvents = events.filter(e => {
+    if (!e.publish || (e.status && e.status !== 'active')) {
+      return false;
+    }
+    
+    // If no events selected yet, show all events
+    if (formData.eventIds.length === 0) {
+      return true;
+    }
+    
+    // If already selected, always show
+    if (formData.eventIds.includes(e.id)) {
+      return true;
+    }
+    
+    const eventGroups = e.groups || ['ALL'];
+    
+    // If bundle is for ALL groups, only show ALL events
+    if (compatibleGroups.includes('ALL')) {
+      return eventGroups.includes('ALL');
+    }
+    
+    // If bundle is for specific groups, show events that share those groups
+    return compatibleGroups.some(group => eventGroups.includes(group));
+  });
 
   return (
     <div className="card">
@@ -713,7 +769,15 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-3">אירועים בחבילה * (בחר {formData.eventIds.length})</label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium">אירועים בחבילה * (בחר {formData.eventIds.length})</label>
+            {compatibleGroups.length > 0 && (
+              <div className="text-xs text-blue-400 flex items-center gap-1">
+                <Users size={12} />
+                קבוצות יעד: {compatibleGroups.includes('ALL') ? 'כולם' : compatibleGroups.join(', ')}
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto border border-gray-600 rounded-lg p-3">
             {activeEvents.map((event) => (
               <label key={event.id} className="flex items-center gap-3 p-2 hover:bg-gray-800/50 rounded cursor-pointer">
@@ -725,8 +789,11 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
                 />
                 <div className="flex-1">
                   <div className="font-medium text-sm">{event.title}</div>
-                  <div className="text-xs text-gray-400">
-                    {new Date(event.startAt).toLocaleDateString('he-IL')} • ₪{event.priceNis}
+                  <div className="text-xs text-gray-400 flex items-center justify-between">
+                    <span>{new Date(event.startAt).toLocaleDateString('he-IL')} • ₪{event.priceNis}</span>
+                    <span className="text-blue-300">
+                      {(event.groups || ['ALL']).includes('ALL') ? 'כולם' : (event.groups || []).join(', ')}
+                    </span>
                   </div>
                 </div>
               </label>
@@ -755,8 +822,11 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
                 />
                 <div className="flex-1">
                   <div className="font-medium text-sm">{event.title}</div>
-                  <div className="text-xs text-gray-400">
-                    {new Date(event.startAt).toLocaleDateString('he-IL')} • ₪{event.priceNis}
+                  <div className="text-xs text-gray-400 flex items-center justify-between">
+                    <span>{new Date(event.startAt).toLocaleDateString('he-IL')} • ₪{event.priceNis}</span>
+                    <span className="text-blue-300">
+                      {(event.groups || ['ALL']).includes('ALL') ? 'כולם' : (event.groups || []).join(', ')}
+                    </span>
                   </div>
                 </div>
               </label>
