@@ -672,11 +672,12 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
   
   // Filter events that are compatible with the bundle's target groups
   const activeEvents = events.filter(e => {
+    // Basic filters first
     if (!e.publish || (e.status && e.status !== 'active')) {
       return false;
     }
     
-    // If no events selected yet, show all events
+    // If no events selected yet, show ALL published and active events
     if (formData.eventIds.length === 0) {
       return true;
     }
@@ -686,15 +687,21 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
       return true;
     }
     
+    // Now apply group compatibility filtering
     const eventGroups = e.groups || ['ALL'];
     
-    // If bundle is for ALL groups, only show ALL events
+    // If bundle is for ALL groups, only show events that are also for ALL
     if (compatibleGroups.includes('ALL')) {
       return eventGroups.includes('ALL');
     }
     
-    // If bundle is for specific groups, show events that share those groups
-    return compatibleGroups.some(group => eventGroups.includes(group));
+    // If bundle is for specific groups, show events that have any overlapping groups
+    if (compatibleGroups.length > 0) {
+      return compatibleGroups.some(group => eventGroups.includes(group));
+    }
+    
+    // Fallback (should not reach here)
+    return true;
   });
 
   return (
@@ -769,13 +776,22 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="block text-sm font-medium">אירועים בחבילה * (בחר {formData.eventIds.length})</label>
-            {compatibleGroups.length > 0 && (
-              <div className="text-xs text-blue-400 flex items-center gap-1">
-                <Users size={12} />
-                קבוצות יעד: {compatibleGroups.includes('ALL') ? 'כולם' : compatibleGroups.join(', ')}
-              </div>
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium">אירועים בחבילה * (בחר {formData.eventIds.length})</label>
+              {compatibleGroups.length > 0 && (
+                <div className="text-xs text-blue-400 flex items-center gap-1">
+                  <Users size={12} />
+                  קבוצות יעד: {compatibleGroups.includes('ALL') ? 'כולם' : compatibleGroups.join(', ')}
+                </div>
+              )}
+            </div>
+            {formData.eventIds.length === 0 ? (
+              <p className="text-xs text-gray-400">בחר אירוע ראשון כדי לקבוע את הקבוצות המתאימות לחבילה</p>
+            ) : (
+              <p className="text-xs text-gray-400">
+                מציג רק אירועים תואמים לקבוצות שנבחרו ({activeEvents.length} זמינים)
+              </p>
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto border border-gray-600 rounded-lg p-3">
