@@ -895,7 +895,7 @@ function EventForm({ event, currentUser, onCancel, onSuccess }: {
         date: combineDateAndTime(formData.date, formData.time),
         location: formData.location.trim(),
         maxParticipants: Math.max(1, Number(formData.maxParticipants) || 20),
-        price: Math.max(0, parseFloat(formData.price) || 0),
+        price: Math.max(0, parseFloat(formData.price.toString()) || 0),
         publish: Boolean(formData.publish),
         status: formData.status,
         imageUrl: formData.imageUrl.trim(),

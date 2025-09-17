@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
             <div className="card text-center">
               <div className="mb-6">
                 <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                <h1 className="text-2xl font-bold mb-2">דוא"ל נשלח בהצלחה!</h1>
+                <h1 className="text-2xl font-bold mb-2">דוא&quot;ל נשלח בהצלחה!</h1>
                 <p className="text-gray-300">
                   שלחנו לך קישור לאיפוס סיסמה לכתובת:
                 </p>
@@ -66,9 +66,9 @@ export default function ForgotPasswordPage() {
                   <div className="text-sm text-blue-200 text-right">
                     <p className="font-medium mb-1">חשוב לזכור:</p>
                     <ul className="space-y-1 text-right">
-                      <li>• בדוק את תיבת הספאם אם לא קיבלת את הדוא"ל</li>
+                      <li>• בדוק את תיבת הספאם אם לא קיבלת את הדוא&quot;ל</li>
                       <li>• הקישור תקף ל-24 שעות בלבד</li>
-                      <li>• לחץ על הקישור בדוא"ל לאיפוס הסיסמה</li>
+                      <li>• לחץ על הקישור בדוא&quot;ל לאיפוס הסיסמה</li>
                     </ul>
                   </div>
                 </div>
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
               <Mail className="w-12 h-12 text-brand-green mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-2">שכחת סיסמה?</h1>
               <p className="text-gray-300">
-                הזן את כתובת הדוא"ל שלך ונשלח לך קישור לאיפוס הסיסמה
+                הזן את כתובת הדוא&quot;ל שלך ונשלח לך קישור לאיפוס הסיסמה
               </p>
             </div>
             
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">דוא"ל</label>
+                <label className="block text-sm font-medium mb-2">דוא&quot;ל</label>
                 <input
                   type="email"
                   value={email}
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    שולח דוא"ל...
+                    שולח דוא&quot;ל...
                   </>
                 ) : (
                   <>
