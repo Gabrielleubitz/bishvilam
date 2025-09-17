@@ -509,7 +509,7 @@ export default function EventManager() {
                 
                 <div className="flex flex-col gap-3">
                   {/* Primary Actions Row */}
-                  <div className="flex items-center gap-2 justify-end">
+                  <div className="flex flex-wrap items-center gap-2 justify-end">
                     <button
                       onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
                       className="btn-outline text-sm px-3 py-1.5 flex items-center gap-2"
@@ -538,8 +538,8 @@ export default function EventManager() {
                   </div>
 
                   {/* Secondary Actions Row */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {/* Publishing Controls */}
                       <div className="flex items-center gap-1 bg-gray-800/50 rounded-md p-1">
                         <button
@@ -593,7 +593,7 @@ export default function EventManager() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {/* Status Control Dropdown */}
                       <div className="relative group">
                         <button
@@ -667,7 +667,7 @@ export default function EventManager() {
                   ) : (
                     <div className="space-y-2">
                       {event.registrations.map((registration) => (
-                        <div key={registration.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded">
+                        <div key={registration.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-gray-800/50 rounded">
                           <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${
                               registration.status === 'confirmed' ? 'bg-green-400' :
@@ -675,14 +675,14 @@ export default function EventManager() {
                             }`} />
                             <div>
                               <div className="font-medium">{registration.userName}</div>
-                              <div className="text-sm text-gray-400">{registration.userEmail}</div>
+                              <div className="text-sm text-gray-400 break-all">{registration.userEmail}</div>
                               {registration.userPhone && (
                                 <div className="text-sm text-gray-400">{registration.userPhone}</div>
                               )}
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-3 justify-end sm:justify-start">
                             {/* Payment Status Dropdown */}
                             <div className="text-left">
                               <select

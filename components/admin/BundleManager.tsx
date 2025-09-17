@@ -340,7 +340,7 @@ export default function BundleManager() {
         ) : (
           bundles.map((bundle) => (
             <div key={bundle.id} className="card">
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-xl font-semibold">{bundle.title}</h3>
@@ -497,7 +497,7 @@ export default function BundleManager() {
                     <div className="space-y-2">
                       {bundle.registrations.map((registration) => {
                         return (
-                          <div key={registration.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded">
+                          <div key={registration.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-gray-800/50 rounded">
                             <div className="flex items-center gap-3">
                               <div className={`w-3 h-3 rounded-full ${
                                 registration.paymentStatus === 'paid' ? 'bg-green-400' :
@@ -510,7 +510,7 @@ export default function BundleManager() {
                                 </div>
                                 <div className="text-sm text-gray-400">
                                   {(registration as any).userEmail && (
-                                    <div>📧 {(registration as any).userEmail}</div>
+                                    <div className="break-all">📧 {(registration as any).userEmail}</div>
                                   )}
                                   {(registration as any).userPhone && (
                                     <div>📱 {(registration as any).userPhone}</div>
