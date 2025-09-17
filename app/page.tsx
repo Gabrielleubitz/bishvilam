@@ -182,16 +182,16 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-brand-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="text-brand-green" size={32} />
               </div>
-              <h3 className="font-semibold mb-2">בטיחות מלאה</h3>
-              <p className="text-gray-400 text-sm">אימון מקצועי תחת השגחת מדריכים מוסמכים</p>
+              <h3 className="font-semibold mb-2">תכנית אימונים</h3>
+              <p className="text-gray-400 text-sm">תכנית אימון על ידי קצין א׳ בשייטת</p>
             </div>
             
             <div className="text-center">
               <div className="w-16 h-16 bg-brand-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="text-brand-green" size={32} />
               </div>
-              <h3 className="font-semibold mb-2">עבודת צוות</h3>
-              <p className="text-gray-400 text-sm">פיתוח מיומנויות חברתיות ועבודה בקבוצה</p>
+              <h3 className="font-semibold mb-2">עבודת צוות ומשפחתיות</h3>
+              <p className="text-gray-400 text-sm">עבודה בקבוצה ופיתוח מיומנויות</p>
             </div>
             
             <div className="text-center">
@@ -199,7 +199,7 @@ export default function HomePage() {
                 <Target className="text-brand-green" size={32} />
               </div>
               <h3 className="font-semibold mb-2">הכנה ממוקדת</h3>
-              <p className="text-gray-400 text-sm">תכנית אימון המותאמת לדרישות הצבא</p>
+              <p className="text-gray-400 text-sm">תכנית מסודרת להכנה לימי סיירות, גיבושים </p>
             </div>
             
             <div className="text-center">
@@ -207,7 +207,7 @@ export default function HomePage() {
                 <Award className="text-brand-green" size={32} />
               </div>
               <h3 className="font-semibold mb-2">מדריכים מנוסים</h3>
-              <p className="text-gray-400 text-sm">לוחמי עבר עם ניסיון עשיר בהדרכה</p>
+              <p className="text-gray-400 text-sm">לוחמי עבר עם ניסיון וחברי הגיבורים שנפלו</p>
             </div>
           </div>
         </div>
@@ -404,19 +404,19 @@ export default function HomePage() {
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>מדריכים מקצועיים עם ניסיון בצה״ל ויחידות מובחרות</span>
+                  <span>מדריכים מנוסים עם ניסיון בצה״ל ובמלחמת חרבות ברזל</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>תכנית אימון מותאמת אישית לכל משתתף</span>
+                  <span>תכנית אימונים ברמה גבוהה שיש</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>דגש על בטיחות ומניעת פציעות</span>
+                  <span>דגש על בטיחות ומניעת פציעות בעזרת פיזיוטרפיסת</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>סיוע בהכנה נפשית ומנטלית לשירות הצבא</span>
+                  <span>ליווי לאורך כל התהליך עד לרגע הגיוס</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
@@ -427,11 +427,10 @@ export default function HomePage() {
             <div className="bg-gray-800 rounded-lg p-8">
               <h3 className="text-xl font-semibold mb-4">תנאי השתתפות</h3>
               <ul className="space-y-2 text-gray-300">
-                <li>• גיל: 16+</li>
-                <li>• חתימת הורה נדרשת</li>
-                <li>• הצהרת בריאות</li>
-                <li>• ביטוח תקף</li>
-                <li>• ציוד אישי בסיסי</li>
+                <li>• גיל: כיתה ט׳+</li>
+                <li>• אישור הורים</li>
+                <li>• רצון לשרת ביחידות המובחרות בצה״ל</li>
+                <li>• לקיחת חלק בפרוייקט להנצחת הגיבורים</li>
               </ul>
             </div>
           </div>

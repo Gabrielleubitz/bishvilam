@@ -91,8 +91,9 @@ export default function AboutPage() {
         <div className="section-container">
           <h1 className="text-4xl font-bold mb-6">עלינו</h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            כושר קרבי הוקם במטרה להכין את בני הנוער בגוש עציון והסביבה לשירות צבאי בצורה הטובה ביותר. 
-            אנו מתמחים באימונים המדמים את התנאים הקשים בצה״ל ומכינים אתכם פיזית ומנטלית.
+          כושר קרבי “בשבילם” הוקם מתוך מטרה להכין את בני הנוער מגוש עציון, נס הרים והסביבה לשירות הצבאי
+באימונים אנו משלבים לצד הכושר הגופני והחוסן המנטלי גם למידה על ערכים של לוחמים – עבודת צוות, עזרה הדדית, התמדה ומנהיגות.
+בנוסף, אנו מקדישים מקום לסיפורי גבורתם של חברינו שנפלו על הגנת המולדת במלחמת חרבות ברזל, כדי להנחיל לדור הבא את זכרם ואת ההשראה שהם הותירו אחריהם.
           </p>
         </div>
       </section>
@@ -104,18 +105,15 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-bold mb-6">הסיפור שלנו</h2>
               <div className="space-y-4 text-gray-300">
-                <p>
-                בשבילם נולד מתוך רצון להפוך את הכאב להשראה חיה. אנו פועלים כדי להכין את בני הנוער לשירות הצבאי, ולתת להם כלים פיזיים 
-                ומנטליים שיסייעו להם להגשים את שאיפתם להגיע ליחידות הקרביות והמובחרות. הפעילות שלנו שמה דגש על כושר גופני,
-                חוסן נפשי, עבודת צוות וערכים – הכל לזכר חברינו שנפלו ובשביל הדור הבא.
+                <p>לאחר לחימה ממושכת בכל גזרות מלחמת חרבות ברזל, שבה איבדנו חברים קרובים – ילדים טובים שרק רצו לגדול – החלטנו להקים את “בשבילם” כושר קרבי לזכרם של:
+                דותן שמעון ז״ל, נטע כהנא ז״ל, ונווה לשם ז״ל.
                 </p>
                 <p>
-                  המטרה שלנו היא לא רק להכין את הגוף לעומסים הפיזיים, אלא גם לפתח את המנטליות הנכונה, 
-                  הביטחון העצמי ויכולת העבודה בצוות שכה חשובים בשירות הצבאי.
+המיזם שלנו נולד מתוך הכאב אך מבקש להפוך אותו לעוצמה.
+המטרה שלנו היא להכין את בני הנוער בצורה הטובה ביותר לימים המאתגרים שלפניהם – ימי סיירות, גיוס ותקופת השירות הקרבי.
                 </p>
                 <p>
-                  עד היום עברו דרכנו מאות צעירים שהתקבלו ליחידות איכות ברחבי צה&quot;ל וממשיכים להוות מקור גאווה עבורנו.
-                </p>
+                אימונים אנו משלבים לא רק כושר גופני וחוסן מנטלי, אלא גם למידה והפנמה של ערכים: עבודת צוות, קבלת האחר, עמידה באתגרים ובניית ביטחון עצמי                </p>
               </div>
             </div>
             <div className="bg-gray-800 rounded-lg p-8">
@@ -125,28 +123,28 @@ export default function AboutPage() {
                   <Shield className="text-brand-green mt-1" size={20} />
                   <div>
                     <h4 className="font-semibold">בטיחות</h4>
-                    <p className="text-gray-400 text-sm">בטיחות המשתתפים היא הערך העליון שלנו</p>
+                    <p className="text-gray-400 text-sm">שמירה קפדנית על כללי בטיחות באימונים</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Users className="text-brand-green mt-1" size={20} />
                   <div>
                     <h4 className="font-semibold">אחדות</h4>
-                    <p className="text-gray-400 text-sm">יצירת קהילה חזקה של צעירים מכל רחבי גוש עציון</p>
+                    <p className="text-gray-400 text-sm"> חיבור בני נוער מכלל ישובי גוש עציון נס הרים והסביבה כהכנה לשירות</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Target className="text-brand-green mt-1" size={20} />
                   <div>
                     <h4 className="font-semibold">מצוינות</h4>
-                    <p className="text-gray-400 text-sm">שאיפה למצוינות בכל פעילות ואימון</p>
+                    <p className="text-gray-400 text-sm">חתירה מתמדת למקסימום יכולת וערכים</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Award className="text-brand-green mt-1" size={20} />
                   <div>
                     <h4 className="font-semibold">מקצועיות</h4>
-                    <p className="text-gray-400 text-sm">גישה מקצועית ומחויבות לתוצאות</p>
+                    <p className="text-gray-400 text-sm">יחס מחויב ושיטתי לכל חניך</p>
                   </div>
                 </div>
               </div>
@@ -286,7 +284,7 @@ export default function AboutPage() {
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>כל המדריכים מוסמכים בעזרה ראשונה</span>
+                  <span>כל האימונים מועברים על ידי מדריך מוסמך להגשת עזרה ראשונה</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
@@ -294,15 +292,11 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>יחס מדריכים למשתתפים - 1:8 מקסימום</span>
+                  <span>העברת שיעורי בטיחות בנושא התייבשות ומכות חום בכל אימון</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>בדיקת מזג אוויר לפני כל אימון חוץ</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>אמבולנס זמין במקום לכל אימון</span>
+                  <span>האימונים יתקיימו אך ורק על דשא או חול למטרת בטיחות החניכים</span>
                 </li>
               </ul>
             </div>
@@ -312,7 +306,7 @@ export default function AboutPage() {
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>רשיון עסק תקף מהמועצה האזורית</span>
+                  <span>רישיון עסק ברשות המיסים</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
@@ -320,11 +314,11 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>אישור משרד הבריאות לפעילות ספורט</span>
+                  <span>לוחמי עבר עם ניסיון בפיקוד ומלחמת חרבות ברזל</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>מדריכים מוסמכים ממכון וינגייט</span>
+                  <span>תוכנית אימונים בנויה על ידי מאמן כושר מוסמך</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
