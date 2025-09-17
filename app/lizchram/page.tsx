@@ -61,19 +61,14 @@ export default function MemorialPage() {
       const { collection, getDocs } = await import('firebase/firestore');
       const { db } = await import('@/lib/firebase.client');
       
-      console.log('Attempting to load fallen soldiers...');
-      
       // Try simple collection query first without orderBy
       const soldiersCollection = collection(db, 'fallenSoldiers');
       const snapshot = await getDocs(soldiersCollection);
-      
-      console.log('Fallen soldiers loaded:', { count: snapshot.size, empty: snapshot.empty });
       
       if (!snapshot.empty) {
         const soldiersData = snapshot.docs.map(doc => {
           const data = doc.data();
           const imageUrl = data.imageUrl || '';
-          console.log(`Soldier ${doc.id} imageUrl:`, imageUrl);
           
           return {
             id: doc.id,
@@ -94,7 +89,6 @@ export default function MemorialPage() {
         soldiersData.sort((a, b) => a.order - b.order);
         setFallenSoldiers(soldiersData);
       } else {
-        console.log('No soldiers found in collection');
         setFallenSoldiers([]);
       }
     } catch (error) {
