@@ -58,16 +58,14 @@ export default function MemorialPage() {
       setLoading(true);
       
       // Dynamically import Firebase to avoid SSR issues
-      const { collection, getDocs, query, orderBy } = await import('firebase/firestore');
+      const { collection, getDocs } = await import('firebase/firestore');
       const { db } = await import('@/lib/firebase.client');
       
+      console.log('Attempting to load fallen soldiers...');
       
-      const soldiersQuery = query(
-        collection(db, 'fallenSoldiers'),
-        orderBy('order', 'asc')
-      );
-      const snapshot = await getDocs(soldiersQuery);
-      
+      // Try simple collection query first without orderBy
+      const soldiersCollection = collection(db, 'fallenSoldiers');
+      const snapshot = await getDocs(soldiersCollection);
       
       console.log('Fallen soldiers loaded:', { count: snapshot.size, empty: snapshot.empty });
       
@@ -75,6 +73,7 @@ export default function MemorialPage() {
         const soldiersData = snapshot.docs.map(doc => {
           const data = doc.data();
           const imageUrl = data.imageUrl || '';
+          console.log(`Soldier ${doc.id} imageUrl:`, imageUrl);
           
           return {
             id: doc.id,
@@ -90,11 +89,21 @@ export default function MemorialPage() {
             order: data.order || 0
           } as FallenSoldier;
         });
+        
+        // Sort by order manually
+        soldiersData.sort((a, b) => a.order - b.order);
         setFallenSoldiers(soldiersData);
+      } else {
+        console.log('No soldiers found in collection');
+        setFallenSoldiers([]);
       }
     } catch (error) {
       console.error('Error loading soldiers:', error);
-      // Use fallback data on error
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        code: (error as any)?.code,
+        details: error
+      });
       setFallenSoldiers([]);
     } finally {
       setLoading(false);
