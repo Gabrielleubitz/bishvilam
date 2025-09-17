@@ -148,7 +148,7 @@ export default function HomePage() {
     </h1>
     <p className="text-2xl md:text-3xl font-bold mb-6 text-white uppercase tracking-wider"
        style={{textShadow: '2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000'}}>
-      "בשבילם"
+      &quot;בשבילם&quot;
     </p>
     
     <p className="text-xl md:text-2xl mb-4 text-gray-200 font-bold uppercase tracking-wide">

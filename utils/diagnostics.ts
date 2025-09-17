@@ -45,7 +45,7 @@ export async function testFirebaseConnection() {
     console.error('❌ Firebase connection failed:', error);
     return {
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       documentCount: 0,
       documents: []
     };
@@ -77,6 +77,6 @@ export async function testSpecificSoldier(slug: string) {
     
   } catch (error) {
     console.error('❌ Error testing soldier:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
