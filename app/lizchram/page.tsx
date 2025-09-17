@@ -68,7 +68,24 @@ export default function MemorialPage() {
       if (!snapshot.empty) {
         const soldiersData = snapshot.docs.map(doc => {
           const data = doc.data();
-          const imageUrl = data.imageUrl || '';
+          let imageUrl = data.imageUrl || '';
+          
+          // If no direct imageUrl, try to get from memorial images (same logic as admin)
+          if (!imageUrl) {
+            const memorialImageMap = {
+              'dotan-shimon': 'memorial-dotan',
+              'neta-kahana': 'memorial-neta', 
+              'nave-leshem': 'memorial-nave'
+            };
+            
+            const memorialId = memorialImageMap[doc.id as keyof typeof memorialImageMap];
+            if (memorialId) {
+              const memorialImage = memorialImages.find(img => img.id === memorialId);
+              if (memorialImage) {
+                imageUrl = memorialImage.url;
+              }
+            }
+          }
           
           return {
             id: doc.id,
