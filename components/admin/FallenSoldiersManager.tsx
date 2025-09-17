@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase.client';
-import { addCacheBuster, extractStoragePathFromUrl, generateTimestampedFilename } from '@/lib/imageUtils';
+import { db } from '@/lib/firebase.client';
 import ImageWithCacheBuster from '@/components/ImageWithCacheBuster';
 import { useMedia } from '@/hooks/useMedia';
-import { Plus, Edit, Trash2, Save, X, Upload, User, Heart } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, User, Heart } from 'lucide-react';
 
 interface FallenSoldier {
   id: string;
@@ -31,7 +29,6 @@ export default function FallenSoldiersManager() {
   const [loading, setLoading] = useState(true);
   const [editingSoldier, setEditingSoldier] = useState<FallenSoldier | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const defaultSoldier: Omit<FallenSoldier, 'id'> = {
     name: '',
@@ -207,16 +204,6 @@ export default function FallenSoldiersManager() {
     if (!confirm(`האם אתה בטוח שברצונך למחוק את ${soldier.hebrewName}?`)) return;
 
     try {
-      // Delete image from storage if it exists
-      if (soldier.imageUrl) {
-        try {
-          const imageRef = ref(storage, soldier.imageUrl);
-          await deleteObject(imageRef);
-        } catch (error) {
-          console.warn('Error deleting image:', error);
-        }
-      }
-
       await deleteDoc(doc(db, 'fallenSoldiers', soldier.id));
       await loadSoldiers();
     } catch (error) {
@@ -225,54 +212,6 @@ export default function FallenSoldiersManager() {
     }
   };
 
-  const handleImageUpload = async (file: File, soldier: FallenSoldier) => {
-    try {
-      setUploading(true);
-      
-      // Delete old image if it exists
-      if (soldier.imageUrl) {
-        try {
-          const oldImagePath = extractStoragePathFromUrl(soldier.imageUrl);
-          if (oldImagePath) {
-            const oldImageRef = ref(storage, oldImagePath);
-            await deleteObject(oldImageRef);
-            console.log('Old image deleted:', oldImagePath);
-          }
-        } catch (error) {
-          console.warn('Could not delete old image:', error);
-          // Continue with upload even if deletion fails
-        }
-      }
-      
-      // Generate unique filename with timestamp
-      const filename = generateTimestampedFilename(file.name, `soldier-${soldier.id}`);
-      const imageRef = ref(storage, `soldiers/${filename}`);
-      
-      // Upload new image
-      await uploadBytes(imageRef, file);
-      const baseImageUrl = await getDownloadURL(imageRef);
-      
-      // Add cache buster to ensure fresh image loads
-      const imageUrlWithCacheBuster = addCacheBuster(baseImageUrl);
-      
-      const updatedSoldier = { ...soldier, imageUrl: baseImageUrl }; // Store clean URL in database
-      
-      // Immediately save the updated soldier with imageUrl to database
-      await setDoc(doc(db, 'fallenSoldiers', soldier.id), updatedSoldier);
-      
-      setEditingSoldier(updatedSoldier);
-      
-      // Reload soldiers to ensure UI reflects database state
-      await loadSoldiers();
-      
-      return baseImageUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('שגיאה בהעלאת התמונה');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const startAddNew = () => {
     const newSoldier: FallenSoldier = {
@@ -318,8 +257,6 @@ export default function FallenSoldiersManager() {
                   setEditingSoldier(null);
                   setIsAddingNew(false);
                 }}
-                onImageUpload={(file) => handleImageUpload(file, editingSoldier)}
-                uploading={uploading}
                 getMemorialImageForSoldier={getMemorialImageForSoldier}
               />
             ) : (
@@ -395,8 +332,6 @@ interface EditSoldierFormProps {
   onChange: (soldier: FallenSoldier) => void;
   onSave: () => void;
   onCancel: () => void;
-  onImageUpload: (file: File) => Promise<string | undefined>;
-  uploading: boolean;
   getMemorialImageForSoldier: (soldier: FallenSoldier) => string;
 }
 
@@ -404,21 +339,14 @@ function EditSoldierForm({
   soldier, 
   onChange, 
   onSave, 
-  onCancel, 
-  onImageUpload, 
-  uploading,
+  onCancel,
   getMemorialImageForSoldier
 }: EditSoldierFormProps) {
+  const { getMemorialImages } = useMedia();
   const handleChange = (field: keyof FallenSoldier, value: string | number | undefined) => {
     onChange({ ...soldier, [field]: value });
   };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      await onImageUpload(file);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -527,37 +455,49 @@ function EditSoldierForm({
         />
       </div>
 
-      {/* Image Upload */}
+      {/* Image Selection from Media Gallery */}
       <div>
         <label className="block text-sm font-medium mb-1">תמונה</label>
-        <div className="flex items-center gap-4">
-          {getMemorialImageForSoldier(soldier) && (
-            <div className="relative">
+        <div className="space-y-3">
+          {soldier.imageUrl && (
+            <div className="flex items-center gap-4">
               <ImageWithCacheBuster
-                key={getMemorialImageForSoldier(soldier)} // Force remount when URL changes
-                src={getMemorialImageForSoldier(soldier)}
+                key={soldier.imageUrl} 
+                src={soldier.imageUrl}
                 alt="Preview"
                 className="w-20 h-20 object-cover rounded-lg"
                 cacheBustOnMount={true}
               />
-              {!soldier.imageUrl && (
-                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-xs px-1 rounded">
-                  מאוסף הזיכרון
-                </div>
-              )}
+              <div className="text-sm text-gray-400">תמונה נבחרת</div>
             </div>
           )}
-          <label className="btn-secondary cursor-pointer flex items-center gap-2">
-            <Upload size={16} />
-            {uploading ? 'מעלה...' : 'העלה תמונה'}
+          
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1">בחר מגלריית הזיכרון</label>
+            <select
+              value={soldier.imageUrl || ''}
+              onChange={(e) => handleChange('imageUrl', e.target.value)}
+              className="input text-sm"
+            >
+              <option value="">בחר תמונה מהגלריה</option>
+              {getMemorialImages().map((image) => (
+                <option key={image.id} value={image.url}>
+                  {image.name} ({image.id})
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1">או הזן URL ישירות</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-              disabled={uploading}
+              type="url"
+              value={soldier.imageUrl || ''}
+              onChange={(e) => handleChange('imageUrl', e.target.value)}
+              className="input text-sm"
+              placeholder="https://example.com/image.jpg"
             />
-          </label>
+          </div>
         </div>
       </div>
 
