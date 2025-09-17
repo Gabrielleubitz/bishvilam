@@ -69,10 +69,11 @@ export default function MemorialPage() {
       const snapshot = await getDocs(soldiersQuery);
       
       
+      console.log('Fallen soldiers loaded:', { count: snapshot.size, empty: snapshot.empty });
+      
       if (!snapshot.empty) {
         const soldiersData = snapshot.docs.map(doc => {
           const data = doc.data();
-          
           const imageUrl = data.imageUrl || '';
           
           return {
@@ -137,6 +138,14 @@ export default function MemorialPage() {
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
               <span className="ml-3 text-white">טוען נתונים...</span>
+            </div>
+          ) : fallenSoldiers.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 max-w-md mx-auto">
+                <Heart className="mx-auto mb-4 text-gray-500" size={48} />
+                <div className="text-gray-300 mb-2 font-semibold">אין חללים רשומים במערכת</div>
+                <div className="text-sm text-gray-500 mb-4">ניתן להוסיף חללים דרך עמוד הניהול</div>
+              </div>
             </div>
           ) : (
             <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
