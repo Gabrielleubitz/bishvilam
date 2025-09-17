@@ -581,8 +581,8 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
       return;
     }
     
-    if (formData.priceNis <= 0) {
-      alert('נא להזין מחיר תקין');
+    if (formData.priceNis < 0) {
+      alert('נא להזין מחיר תקין (0 או יותר)');
       return;
     }
 
@@ -728,11 +728,12 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
             <label className="block text-sm font-medium mb-2">מחיר (₪) *</label>
             <input
               type="number"
+              step="0.5"
               value={formData.priceNis}
-              onChange={(e) => setFormData(prev => ({ ...prev, priceNis: Number(e.target.value) }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, priceNis: parseFloat(e.target.value) || 0 }))}
               className="input"
               required
-              min="1"
+              min="0"
             />
           </div>
         </div>

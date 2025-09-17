@@ -895,7 +895,7 @@ function EventForm({ event, currentUser, onCancel, onSuccess }: {
         date: combineDateAndTime(formData.date, formData.time),
         location: formData.location.trim(),
         maxParticipants: Math.max(1, Number(formData.maxParticipants) || 20),
-        price: Math.max(0, Number(formData.price) || 0),
+        price: Math.max(0, parseFloat(formData.price) || 0),
         publish: Boolean(formData.publish),
         status: formData.status,
         imageUrl: formData.imageUrl.trim(),
@@ -1028,6 +1028,7 @@ function EventForm({ event, currentUser, onCancel, onSuccess }: {
             <label className="block text-sm font-medium mb-2">מחיר (₪)</label>
             <input
               type="number"
+              step="0.5"
               name="price"
               value={formData.price}
               onChange={handleChange}
