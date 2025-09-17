@@ -5,7 +5,8 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase.client';
 import Navbar from '@/components/Navbar';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
-import { Shield, Users, Target, Award, MapPin, Phone, Mail, UserCircle } from 'lucide-react';
+import ImageModal from '@/components/ImageModal';
+import { Shield, Users, Target, Award, MapPin, Phone, Mail, UserCircle, UserCheck } from 'lucide-react';
 import { useMedia } from '@/hooks/useMedia';
 
 interface TeamMember {
@@ -18,9 +19,12 @@ interface TeamMember {
 }
 
 export default function AboutPage() {
-  const { getGalleryImages } = useMedia();
+  const { getGalleryImages, getVideoUrls } = useMedia();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loadingTeam, setLoadingTeam] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState({ url: '', alt: '', type: 'team' as 'team' | 'gallery', position: '' });
+  const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0);
 
   useEffect(() => {
     loadTeamMembers();
@@ -80,6 +84,47 @@ export default function AboutPage() {
     } finally {
       setLoadingTeam(false);
     }
+  };
+
+  const openTeamModal = (imageUrl: string, name: string, position: string) => {
+    setModalImage({ url: imageUrl, alt: name, type: 'team', position });
+    setModalOpen(true);
+  };
+
+  const openGalleryModal = (index: number) => {
+    const images = getGalleryImages();
+    setCurrentGalleryIndex(index);
+    setModalImage({ 
+      url: images[index], 
+      alt: `גלריית פעילות ${index + 1}`, 
+      type: 'gallery', 
+      position: '' 
+    });
+    setModalOpen(true);
+  };
+
+  const navigateGallery = (direction: 'prev' | 'next') => {
+    const images = getGalleryImages();
+    let newIndex = currentGalleryIndex;
+    
+    if (direction === 'prev') {
+      newIndex = currentGalleryIndex > 0 ? currentGalleryIndex - 1 : images.length - 1;
+    } else {
+      newIndex = currentGalleryIndex < images.length - 1 ? currentGalleryIndex + 1 : 0;
+    }
+    
+    setCurrentGalleryIndex(newIndex);
+    setModalImage({ 
+      url: images[newIndex], 
+      alt: `גלריית פעילות ${newIndex + 1}`, 
+      type: 'gallery', 
+      position: '' 
+    });
+  };
+
+  const closeImageModal = () => {
+    setModalOpen(false);
+    setModalImage({ url: '', alt: '', type: 'team', position: '' });
   };
 
   return (
@@ -147,6 +192,13 @@ export default function AboutPage() {
                     <p className="text-gray-400 text-sm">יחס מחויב ושיטתי לכל חניך</p>
                   </div>
                 </div>
+                <div className="flex items-start gap-3">
+                  <UserCheck className="text-brand-green mt-1" size={20} />
+                  <div>
+                    <h4 className="font-semibold">זכר החללים</h4>
+                    <p className="text-gray-400 text-sm">יחס רציני ומחויבות מלאה מול כל חניך, תוך הקפדה על גישה מקצועית ושיטתית</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -171,7 +223,8 @@ export default function AboutPage() {
                     <img
                       src={member.imageUrl}
                       alt={member.name}
-                      className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-brand-green/30"
+                      className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-brand-green/30 cursor-pointer hover:border-brand-green transition-all duration-300 hover:scale-105"
+                      onClick={() => openTeamModal(member.imageUrl!, member.name, member.title)}
                       onError={(e) => {
                         // Fallback to gray circle if image fails to load
                         const target = e.target as HTMLImageElement;
@@ -214,6 +267,72 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Video Section */}
+      <section className="py-16">
+        <div className="section-container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">סרטונים</h2>
+            <div className="w-20 h-1 bg-brand-green mx-auto mb-4"></div>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              צפו בסרטונים מהאימונים שלנו וקבלו טעימה מהחוויה המיוחדת שמחכה לכם
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {getVideoUrls().map((video, index) => (
+              <div key={video.id} className="group">
+                <div className="relative bg-gray-900 rounded-lg overflow-hidden border border-gray-700 hover:border-brand-green/50 transition-all duration-300">
+                  {/* Military-style corner brackets */}
+                  <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                  <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+
+                  {/* Video iframe */}
+                  <div className="aspect-video">
+                    <iframe
+                      src={video.url}
+                      title={video.name}
+                      className="w-full h-full rounded-lg"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  
+                  {/* Video info overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="text-brand-green text-xs font-mono mb-1">[ VIDEO_{String(index + 1).padStart(2, '0')} ]</div>
+                    <h3 className="text-white font-semibold text-sm">{video.name}</h3>
+                    {video.description && (
+                      <p className="text-gray-300 text-xs mt-1">{video.description}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Military-style motivational quote */}
+          <div className="mt-12 text-center">
+            <div className="relative inline-block">
+              <div className="bg-gray-900 border border-brand-green/30 px-8 py-4">
+                <div className="text-brand-green text-sm font-mono mb-2">[ TRAINING PHILOSOPHY ]</div>
+                <p className="text-gray-300 font-semibold max-w-2xl">
+                  &quot;האימון הוא לא רק הכנה לצבא - הוא הכנה לחיים&quot;
+                </p>
+                <div className="text-brand-green text-sm font-mono mt-2">[ BISHVILAM_COMBAT_FITNESS ]</div>
+              </div>
+              
+              {/* Corner decorations */}
+              <div className="absolute -top-1 -left-1 w-3 h-3 border-l-2 border-t-2 border-brand-green"></div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 border-r-2 border-t-2 border-brand-green"></div>
+              <div className="absolute -bottom-1 -left-1 w-3 h-3 border-l-2 border-b-2 border-brand-green"></div>
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 border-r-2 border-b-2 border-brand-green"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Gallery */}
       <section className="py-16 bg-black">
         <div className="section-container">
@@ -227,7 +346,11 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
             {getGalleryImages().map((imageUrl, index) => (
-              <div key={index} className="group relative aspect-square overflow-hidden bg-gray-900 border border-gray-800">
+              <div 
+                key={index} 
+                className="group relative aspect-square overflow-hidden bg-gray-900 border border-gray-800 cursor-pointer"
+                onClick={() => openGalleryModal(index)}
+              >
                 <img
                   src={imageUrl}
                   alt={`גלריית פעילות ${index + 1}`}
@@ -418,6 +541,19 @@ export default function AboutPage() {
 
       {/* WhatsApp Float */}
       <WhatsAppFloat message="שלום! אני מעוניין לקבל מידע נוסף על הפעילות שלכם" />
+
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={modalOpen}
+        imageUrl={modalImage.url}
+        altText={modalImage.alt}
+        onClose={closeImageModal}
+        modalType={modalImage.type}
+        teamMemberPosition={modalImage.position}
+        hasNavigation={modalImage.type === 'gallery'}
+        onPrevious={modalImage.type === 'gallery' ? () => navigateGallery('prev') : undefined}
+        onNext={modalImage.type === 'gallery' ? () => navigateGallery('next') : undefined}
+      />
     </div>
   );
 }

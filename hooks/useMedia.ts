@@ -20,118 +20,16 @@ interface MediaCategories {
   gallery: MediaItem[];
   navbar: MediaItem[];
   events: MediaItem[];
+  videos: MediaItem[];
 }
 
 const getDefaultMediaData = (): MediaCategories => ({
-  hero: [
-    {
-      id: 'hero-bg',
-      name: 'רקע עמוד הבית',
-      url: 'https://ik.imagekit.io/cjenfmnqf/Screenshot%202025-08-24%20at%2013.27.41.png',
-      category: 'hero',
-      description: 'תמונת הרקע הראשית של עמוד הבית',
-      isActive: true,
-      lastUpdated: new Date()
-    }
-  ],
-  memorial: [
-    {
-      id: 'memorial-dotan',
-      name: 'דותן שמעון ז"ל',
-      url: 'https://ik.imagekit.io/cjenfmnqf/Screenshot%202025-08-24%20at%2014.18.44.png',
-      category: 'memorial',
-      description: 'תמונה של דותן שמעון ז"ל',
-      isActive: true,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'memorial-neta',
-      name: 'נטע כהנא ז"ל',
-      url: 'https://ik.imagekit.io/cjenfmnqf/Screenshot%202025-08-24%20at%2014.25.04.png',
-      category: 'memorial',
-      description: 'תמונה של נטע כהנא ז"ל',
-      isActive: true,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'memorial-nave',
-      name: 'נווה לשם ז"ל',
-      url: 'https://ik.imagekit.io/cjenfmnqf/Screenshot%202025-08-24%20at%2014.30.18.png',
-      category: 'memorial',
-      description: 'תמונה של נווה לשם ז"ל',
-      isActive: true,
-      lastUpdated: new Date()
-    }
-  ],
-  gallery: [
-    {
-      id: 'gallery-1',
-      name: 'אימון 1',
-      url: 'https://ik.imagekit.io/cjenfmnqf/Screenshot%202025-08-24%20at%2013.27.41.png',
-      category: 'gallery',
-      description: 'תמונה מהאימונים',
-      isActive: true,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'gallery-2',
-      name: 'אימון 2',
-      url: 'https://ik.imagekit.io/cjenfmnqf/WhatsApp%20Image%202025-08-24%20at%2013.26.14.jpeg',
-      category: 'gallery',
-      description: 'תמונה מהאימונים',
-      isActive: true,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'gallery-3',
-      name: 'אימון 3',
-      url: 'https://ik.imagekit.io/cjenfmnqf/WhatsApp%20Image%202025-08-24%20at%2013.26.18.jpeg',
-      category: 'gallery',
-      description: 'תמונה מהאימונים',
-      isActive: true,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'gallery-4',
-      name: 'אימון 4',
-      url: 'https://ik.imagekit.io/cjenfmnqf/WhatsApp%20Image%202025-08-24%20at%2013.26.27.jpeg',
-      category: 'gallery',
-      description: 'תמונה מהאימונים',
-      isActive: true,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'gallery-5',
-      name: 'אימון 5',
-      url: 'https://ik.imagekit.io/cjenfmnqf/WhatsApp%20Image%202025-08-24%20at%2013.26.01.jpeg',
-      category: 'gallery',
-      description: 'תמונה מהאימונים',
-      isActive: true,
-      lastUpdated: new Date()
-    }
-  ],
-  navbar: [
-    {
-      id: 'navbar-logo',
-      name: 'לוגו בשבילם',
-      url: 'https://ik.imagekit.io/cjenfmnqf/Screenshot%202025-08-24%20at%201.14.27.png',
-      category: 'navbar',
-      description: 'הלוגו הראשי של האתר',
-      isActive: true,
-      lastUpdated: new Date()
-    }
-  ],
-  events: [
-    {
-      id: 'event-default',
-      name: 'תמונה ברירת מחדל לאירועים',
-      url: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg',
-      category: 'events',
-      description: 'תמונה ברירת מחדל עבור אירועים ללא תמונה',
-      isActive: true,
-      lastUpdated: new Date()
-    }
-  ]
+  hero: [],
+  memorial: [],
+  gallery: [],
+  navbar: [],
+  events: [],
+  videos: []
 });
 
 export const useMedia = () => {
@@ -146,11 +44,12 @@ export const useMedia = () => {
         if (doc.exists()) {
           const data = doc.data();
           setMediaData({
-            hero: data.hero || getDefaultMediaData().hero,
-            memorial: data.memorial || getDefaultMediaData().memorial,
-            gallery: data.gallery || getDefaultMediaData().gallery,
-            navbar: data.navbar || getDefaultMediaData().navbar,
-            events: data.events || getDefaultMediaData().events
+            hero: data.hero || [],
+            memorial: data.memorial || [],
+            gallery: data.gallery || [],
+            navbar: data.navbar || [],
+            events: data.events || [],
+            videos: data.videos || []
           });
         } else {
           setMediaData(getDefaultMediaData());
@@ -170,14 +69,11 @@ export const useMedia = () => {
   // Helper functions to get specific media items
   const getHeroImage = () => {
     const activeHero = mediaData.hero.find(item => item.isActive);
-    return activeHero?.url || getDefaultMediaData().hero[0].url;
+    return activeHero?.url || '';
   };
 
   const getMemorialImages = () => {
-    const activeImages = mediaData.memorial.filter(item => item.isActive);
-    const defaultImages = getDefaultMediaData().memorial;
-    
-    return activeImages.length > 0 ? activeImages : defaultImages;
+    return mediaData.memorial.filter(item => item.isActive);
   };
 
   const getGalleryImages = () => {
@@ -187,12 +83,16 @@ export const useMedia = () => {
 
   const getNavbarLogo = () => {
     const activeLogo = mediaData.navbar.find(item => item.isActive);
-    return activeLogo?.url || getDefaultMediaData().navbar[0].url;
+    return activeLogo?.url || '';
   };
 
   const getDefaultEventImage = () => {
     const activeDefault = mediaData.events.find(item => item.isActive);
-    return activeDefault?.url || getDefaultMediaData().events[0].url;
+    return activeDefault?.url || '';
+  };
+
+  const getVideoUrls = () => {
+    return mediaData.videos.filter(item => item.isActive);
   };
 
   return {
@@ -202,6 +102,7 @@ export const useMedia = () => {
     getMemorialImages,
     getGalleryImages,
     getNavbarLogo,
-    getDefaultEventImage
+    getDefaultEventImage,
+    getVideoUrls
   };
 };

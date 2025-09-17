@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase.client';
-import { Image, Save, RefreshCw, Eye, EyeOff, Edit3, Trash2, Plus } from 'lucide-react';
+import { Image, Save, RefreshCw, Eye, EyeOff, Edit3, Trash2, Plus, Video } from 'lucide-react';
 
 interface MediaItem {
   id: string;
@@ -21,6 +21,7 @@ interface MediaCategories {
   gallery: MediaItem[];
   navbar: MediaItem[];
   events: MediaItem[];
+  videos: MediaItem[];
 }
 
 export default function MediaManager() {
@@ -29,7 +30,8 @@ export default function MediaManager() {
     memorial: [],
     gallery: [],
     navbar: [],
-    events: []
+    events: [],
+    videos: []
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,7 +43,8 @@ export default function MediaManager() {
     { id: 'memorial' as const, name: 'לזכרם - תמונות החללים', icon: Image },
     { id: 'gallery' as const, name: 'גלריית תמונות', icon: Image },
     { id: 'navbar' as const, name: 'לוגו וניווט', icon: Image },
-    { id: 'events' as const, name: 'תמונות אירועים', icon: Image }
+    { id: 'events' as const, name: 'תמונות אירועים', icon: Image },
+    { id: 'videos' as const, name: 'סרטונים', icon: Video }
   ];
 
   useEffect(() => {
@@ -157,6 +160,26 @@ export default function MediaManager() {
         isActive: true,
         lastUpdated: new Date()
       }
+    ],
+    videos: [
+      {
+        id: 'about-intro',
+        name: 'סרטון היכרות',
+        url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        category: 'videos',
+        description: 'סרטון היכרות עם הפעילות',
+        isActive: true,
+        lastUpdated: new Date()
+      },
+      {
+        id: 'training-highlights',
+        name: 'תקציר אימונים',
+        url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        category: 'videos',
+        description: 'תקציר מהאימונים שלנו',
+        isActive: true,
+        lastUpdated: new Date()
+      }
     ]
   });
 
@@ -172,7 +195,8 @@ export default function MediaManager() {
           memorial: data.memorial || getDefaultMediaData().memorial,
           gallery: data.gallery || getDefaultMediaData().gallery,
           navbar: data.navbar || getDefaultMediaData().navbar,
-          events: data.events || getDefaultMediaData().events
+          events: data.events || getDefaultMediaData().events,
+          videos: data.videos || getDefaultMediaData().videos
         });
       } else {
         // Initialize with default data
@@ -217,7 +241,7 @@ export default function MediaManager() {
   const addMediaItem = (categoryId: keyof MediaCategories) => {
     const newItem: MediaItem = {
       id: `${categoryId}-${Date.now()}`,
-      name: 'תמונה חדשה',
+      name: categoryId === 'videos' ? 'סרטון חדש' : 'תמונה חדשה',
       url: '',
       category: categoryId,
       description: '',
@@ -233,7 +257,8 @@ export default function MediaManager() {
   };
 
   const deleteMediaItem = (categoryId: keyof MediaCategories, itemId: string) => {
-    if (confirm('האם אתה בטוח שברצונך למחוק תמונה זו?')) {
+    const itemType = categoryId === 'videos' ? 'סרטון זה' : 'תמונה זו';
+    if (confirm(`האם אתה בטוח שברצונך למחוק ${itemType}?`)) {
       setMediaData(prev => ({
         ...prev,
         [categoryId]: prev[categoryId].filter(item => item.id !== itemId)
@@ -316,7 +341,7 @@ export default function MediaManager() {
             className="btn-outline flex items-center gap-2"
           >
             <Plus size={16} />
-            הוסף תמונה
+            {activeCategory === 'videos' ? 'הוסף סרטון' : 'הוסף תמונה'}
           </button>
         </div>
 
@@ -324,21 +349,34 @@ export default function MediaManager() {
           {mediaData[activeCategory].map((item) => (
             <div key={item.id} className="card border border-gray-700">
               <div className="flex gap-4">
-                {/* Image Preview */}
+                {/* Media Preview */}
                 <div className="flex-shrink-0">
                   <div className="w-24 h-24 bg-gray-800 rounded-lg overflow-hidden">
                     {item.url ? (
-                      <img
-                        src={item.url}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik0xMiAxNkM4IDEyIDggOCA4IDhIMTZDMTYgOCAxNiAxMiAxMiAxNloiIGZpbGw9IiM2QjcyODAiLz4KPC9zdmc+';
-                        }}
-                      />
+                      activeCategory === 'videos' ? (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500 relative">
+                          <Video size={20} />
+                          <div className="absolute inset-0 bg-black/20"></div>
+                          {item.url.includes('youtube.com') || item.url.includes('youtu.be') ? (
+                            <div className="absolute inset-0 text-red-500 flex items-center justify-center">
+                              <Video size={16} />
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <img
+                          key={item.url} // Force remount when URL changes
+                          src={item.url}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik0xMiAxNkM4IDEyIDggOCA4IDhIMTZDMTYgOCAxNiAxMiAxMiAxNloiIGZpbGw9IiM2QjcyODAiLz4KPC9zdmc+';
+                          }}
+                        />
+                      )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        <Image size={20} />
+                        {activeCategory === 'videos' ? <Video size={20} /> : <Image size={20} />}
                       </div>
                     )}
                   </div>
@@ -353,20 +391,24 @@ export default function MediaManager() {
                         value={item.name}
                         onChange={(e) => updateMediaItem(activeCategory, item.id, { name: e.target.value })}
                         className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
-                        placeholder="שם התמונה"
+                        placeholder={activeCategory === 'videos' ? 'שם הסרטון' : 'שם התמונה'}
                       />
                       <input
                         type="url"
                         value={item.url}
                         onChange={(e) => updateMediaItem(activeCategory, item.id, { url: e.target.value })}
                         className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
-                        placeholder="https://example.com/image.jpg"
+                        placeholder={
+                          activeCategory === 'videos' 
+                            ? 'https://www.youtube.com/embed/VIDEO_ID' 
+                            : 'https://example.com/image.jpg'
+                        }
                       />
                       <textarea
                         value={item.description}
                         onChange={(e) => updateMediaItem(activeCategory, item.id, { description: e.target.value })}
                         className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
-                        placeholder="תיאור התמונה"
+                        placeholder={activeCategory === 'videos' ? 'תיאור הסרטון' : 'תיאור התמונה'}
                         rows={2}
                       />
                       <div className="flex gap-2">
@@ -440,6 +482,7 @@ export default function MediaManager() {
           <p>• <strong>גלריית תמונות:</strong> תמונות המוצגות בגלריה בעמוד &quot;עלינו&quot;</p>
           <p>• <strong>לוגו וניווט:</strong> הלוגו הראשי של האתר</p>
           <p>• <strong>תמונות אירועים:</strong> תמונות ברירת מחדל עבור אירועים</p>
+          <p>• <strong>סרטונים:</strong> סרטוני YouTube המוצגים בעמוד &quot;עלינו&quot; (השתמש בקישור embed)</p>
         </div>
       </div>
     </div>

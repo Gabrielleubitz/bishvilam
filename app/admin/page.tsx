@@ -15,7 +15,8 @@ import PastEventsManager from '@/components/admin/PastEventsManager';
 import EventAttendanceChecker from '@/components/admin/EventAttendanceChecker';
 import BundleManager from '@/components/admin/BundleManager';
 import TeamManager from '@/components/admin/TeamManager';
-import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown, RefreshCw, ClipboardCheck, Package, UserCircle } from 'lucide-react';
+import FallenSoldiersManager from '@/components/admin/FallenSoldiersManager';
+import { Users, Calendar, Image, BarChart3, UserCheck, MessageCircle, Mail, Megaphone, History, Settings, ChevronDown, RefreshCw, ClipboardCheck, Package, UserCircle, Heart } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -187,7 +188,8 @@ export default function AdminDashboard() {
       icon: Settings,
       items: [
         { id: 'media', label: 'מדיה וגלריה', icon: Image },
-        { id: 'team', label: 'צוות החברה', icon: UserCircle }
+        { id: 'team', label: 'צוות החברה', icon: UserCircle },
+        { id: 'fallen-soldiers', label: 'חללים לזכרם', icon: Heart }
       ]
     }
   ];
@@ -375,6 +377,7 @@ export default function AdminDashboard() {
                 {activeTab === 'email' && <EmailTester />}
                 {activeTab === 'media' && <MediaManager />}
                 {activeTab === 'team' && <TeamManager />}
+                {activeTab === 'fallen-soldiers' && <FallenSoldiersManager />}
               </div>
             </div>
           </div>

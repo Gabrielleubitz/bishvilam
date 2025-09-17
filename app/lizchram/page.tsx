@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
+import ImageWithCacheBuster from '@/components/ImageWithCacheBuster';
 import { Heart, Shield, Calendar, MapPin } from 'lucide-react';
 import { useMedia } from '@/hooks/useMedia';
+import Link from 'next/link';
 
 // Custom Candle SVG Component
 const CandleIcon = ({ className, size = 64 }: { className?: string; size?: number }) => (
@@ -26,37 +29,76 @@ const CandleIcon = ({ className, size = 64 }: { className?: string; size?: numbe
   </svg>
 );
 
+interface FallenSoldier {
+  id: string;
+  name: string;
+  hebrewName: string;
+  age?: number;
+  unit?: string;
+  rank?: string;
+  dateOfFalling: string;
+  imageUrl?: string;
+  shortDescription: string;
+  slug: string;
+  order: number;
+}
+
 export default function MemorialPage() {
   const { getMemorialImages } = useMedia();
   const memorialImages = getMemorialImages();
+  const [fallenSoldiers, setFallenSoldiers] = useState<FallenSoldier[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Map memorial images to soldier data
-  const fallenSoldiers = [
-    {
-      name: "דותן שמעון ז\"ל",
-      imageUrl: memorialImages.find(img => img.id === 'memorial-dotan')?.url || memorialImages[0]?.url,
-      unit: "גדוד שקד בחטיבת גבעתי",
-      dateOfFall: "י״ד אלול התשפ״ד",
-      age: "21",
-      description: "לוחם אמיץ ומסור, מנהיג טבעי שהיה אהוב על כל מי שהכיר אותו. דותן השאיר אחריו מורשת של אחווה, מסירות וערכי לוחם."
-    },
-    {
-      name: "נטע כהנא ז\"ל", 
-      imageUrl: memorialImages.find(img => img.id === 'memorial-neta')?.url || memorialImages[1]?.url,
-      unit: " לוחם ימ״ס",
-      dateOfFall: "כ״ז ניסן התשפ״ה",
-      age: "20", 
-      description: "חייל מופתי ובן אדם נפלא, נטע היה דוגמה אישית לכל מי שסביבו. זכרו ילווה אותנו תמיד בדרך להגשמת חלומותיו."
-    },
-    {
-      name: "נווה לשם ז\"ל",
-      imageUrl: memorialImages.find(img => img.id === 'memorial-nave')?.url || memorialImages[2]?.url,
-      unit: " גדוד 12 בחטיבת גולני",
-      dateOfFall: "כ׳ סיון התשפ״ה",
-      age: "21",
-      description: "לוחם אמיץ ונחוש, נווה היה מקור השראה לחבריו. הוא נפל במילוי תפקידו בהגנה על עם ישראל וארץ ישראל."
+  useEffect(() => {
+    loadSoldiers();
+  }, []);
+
+  const loadSoldiers = async () => {
+    try {
+      setLoading(true);
+      
+      // Dynamically import Firebase to avoid SSR issues
+      const { collection, getDocs, query, orderBy } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase.client');
+      
+      
+      const soldiersQuery = query(
+        collection(db, 'fallenSoldiers'),
+        orderBy('order', 'asc')
+      );
+      const snapshot = await getDocs(soldiersQuery);
+      
+      
+      if (!snapshot.empty) {
+        const soldiersData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          
+          const imageUrl = data.imageUrl || '';
+          
+          return {
+            id: doc.id,
+            name: data.name || '',
+            hebrewName: data.hebrewName || '',
+            age: data.age,
+            unit: data.unit || '',
+            rank: data.rank || '',
+            dateOfFalling: data.dateOfFalling || '',
+            imageUrl: imageUrl,
+            shortDescription: data.shortDescription || '',
+            slug: data.slug || '',
+            order: data.order || 0
+          } as FallenSoldier;
+        });
+        setFallenSoldiers(soldiersData);
+      }
+    } catch (error) {
+      console.error('Error loading soldiers:', error);
+      // Use fallback data on error
+      setFallenSoldiers([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen">
@@ -90,69 +132,89 @@ export default function MemorialPage() {
       {/* Memorial Cards */}
       <section className="py-20 bg-gray-900">
         <div className="section-container">
-          <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {fallenSoldiers.map((soldier, index) => (
-              <div key={index} className="group">
-                <div className="relative bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg overflow-hidden hover:border-yellow-400/50 transition-all duration-500">
-                  {/* Corner Decorations */}
-                  <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+              <span className="ml-3 text-white">טוען נתונים...</span>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {fallenSoldiers.map((soldier) => (
+                <Link 
+                  key={soldier.id} 
+                  href={`/lizchram/${soldier.slug}`}
+                  className="group block"
+                >
+                  <div className="relative bg-black/50 backdrop-blur-sm border border-gray-700 rounded-lg overflow-hidden hover:border-yellow-400/50 transition-all duration-500 cursor-pointer">
+                    {/* Corner Decorations */}
+                    <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 border-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                  {/* Image Section */}
-                  <div className="aspect-[4/3] relative overflow-hidden">
-                    <img
-                      src={soldier.imageUrl}
-                      alt={soldier.name}
-                      className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    
-                    {/* Memorial Candle */}
-                    <div className="absolute top-4 right-4">
-                      <CandleIcon size={32} className="opacity-80" />
-                    </div>
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="p-6 relative">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors duration-300">
-                        {soldier.name}
-                      </h3>
-                      <div className="w-16 h-0.5 bg-yellow-400 mx-auto mb-4"></div>
+                    {/* Image Section */}
+                    <div className="aspect-[4/3] relative overflow-hidden">
+                      {soldier.imageUrl ? (
+                        <ImageWithCacheBuster
+                          key={soldier.imageUrl} // Force remount when URL changes
+                          src={soldier.imageUrl}
+                          alt={soldier.hebrewName}
+                          className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700"
+                          cacheBustOnMount={true}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                          <Heart className="text-gray-400" size={48} />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                       
-                      <div className="space-y-2 text-gray-300 mb-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <Shield className="w-4 h-4 text-yellow-400" />
-                          <span className="text-sm">{soldier.unit}</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-4 text-sm">
-                          <span>גיל: {soldier.age}</span>
-                          <span>•</span>
-                          <span>{soldier.dateOfFall}</span>
-                        </div>
+                      {/* Memorial Candle */}
+                      <div className="absolute top-4 right-4">
+                        <CandleIcon size={32} className="opacity-80" />
                       </div>
                     </div>
 
-                    <p className="text-gray-400 text-sm leading-relaxed text-center mb-6">
-                      {soldier.description}
-                    </p>
+                    {/* Content Section */}
+                    <div className="p-6 relative">
+                      <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors duration-300">
+                          {soldier.hebrewName}
+                        </h3>
+                        <div className="w-16 h-0.5 bg-yellow-400 mx-auto mb-4"></div>
+                        
+                        <div className="space-y-2 text-gray-300 mb-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <Shield className="w-4 h-4 text-yellow-400" />
+                            <span className="text-sm">{soldier.unit}</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-4 text-sm">
+                            <span>גיל: {soldier.age}</span>
+                            <span>•</span>
+                            <span>{soldier.dateOfFalling}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                    {/* Memorial Footer */}
-                    <div className="text-center pt-4 border-t border-gray-700">
-                      <div className="flex items-center justify-center gap-2">
-                        <Heart className="w-4 h-4 text-red-500" />
-                        <span className="text-xs text-gray-500 font-hebrew">זיכרונו לברכה</span>
-                        <Heart className="w-4 h-4 text-red-500" />
+                      <p className="text-gray-400 text-sm leading-relaxed text-center mb-6">
+                        {soldier.shortDescription}
+                      </p>
+
+                      {/* Memorial Footer */}
+                      <div className="text-center pt-4 border-t border-gray-700">
+                        <div className="flex items-center justify-center gap-2">
+                          <Heart className="w-4 h-4 text-red-500" />
+                          <span className="text-xs text-gray-500 font-hebrew">זיכרונו לברכה</span>
+                          <Heart className="w-4 h-4 text-red-500" />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -178,44 +240,27 @@ export default function MemorialPage() {
                   <Heart className="w-8 h-8 text-yellow-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">אחווה</h3>
-                <p className="text-gray-400 text-sm">אחוות לוחמים שאין עליה</p>
+                <p className="text-gray-400 text-sm">דאגה לחבר ועבודת צוות</p>
               </div>
               
               <div className="text-center">
                 <div className="w-16 h-16 bg-yellow-400/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-400/30">
-                  <CandleIcon size={32} />
+                  <Calendar className="w-8 h-8 text-yellow-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">מצוינות</h3>
-                <p className="text-gray-400 text-sm">שאיפה תמידית למצוינות</p>
+                <h3 className="text-lg font-semibold text-white mb-2">מנהיגות</h3>
+                <p className="text-gray-400 text-sm">מנהיגות אישית והובלת דוגמה</p>
               </div>
             </div>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-yellow-400/30 rounded-lg p-8">
-              <blockquote className="text-xl text-gray-200 italic mb-6 leading-relaxed">
-                &quot;הם נפלו בשדה הכבוד, אבל רוחם תמיד תלווה אותנו. 
-                בכל אימון, בכל אתגר, בכל הישג - הם איתנו.&quot;
-              </blockquote>
-              <div className="text-yellow-400 font-semibold">— צוות בשבילם</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-16 bg-black">
-        <div className="section-container text-center">
-          <h2 className="text-2xl font-bold text-white mb-6">הצטרפו אלינו להנצחת זכרם</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto mb-8">
-            כל משתתף באימונים שלנו הוא חלק מהמורשת שהם השאירו. 
-            הצטרפו אלינו להמשך המסע בדרך שהם סללו.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/events" className="btn bg-yellow-600 hover:bg-yellow-700 border-yellow-600">
-              הירשמו לאימונים
-            </a>
-            <a href="/about" className="btn-outline border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black">
-              קראו עלינו
-            </a>
+            <blockquote className="text-xl md:text-2xl text-gray-200 italic mb-8">
+              &quot;הם לא נפלו לשווא - הם נפלו כדי שאחרים יחיו&quot;
+            </blockquote>
+            
+            <p className="text-gray-300 leading-relaxed">
+              בכל אימון, בכל פעילות, בכל רגע של הכנה לשירות צבאי - אנו זוכרים אותם. 
+              המטרה שלנו היא לא רק להכין לוחמים טובים יותר, אלא לגדל דור שימשיך להוביל 
+              את הערכים שהם השאירו אחריהם.
+            </p>
           </div>
         </div>
       </section>
