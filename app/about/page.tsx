@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase.client';
 import Navbar from '@/components/Navbar';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import ImageModal from '@/components/ImageModal';
-import { Shield, Users, Target, Award, MapPin, Phone, Mail, UserCircle, UserCheck } from 'lucide-react';
+import { Shield, Users, Target, Award, MapPin, Phone, Mail, UserCircle, UserCheck, Video } from 'lucide-react';
 import { useMedia } from '@/hooks/useMedia';
 
 interface TeamMember {
@@ -25,6 +25,8 @@ export default function AboutPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState({ url: '', alt: '', type: 'team' as 'team' | 'gallery', position: '' });
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0);
+
+  const videos = getVideoUrls();
 
   useEffect(() => {
     loadTeamMembers();
@@ -278,9 +280,21 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {getVideoUrls().map((video, index) => (
-              <div key={video.id} className="group">
+          {videos.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 max-w-md mx-auto">
+                <Video className="mx-auto mb-4 text-gray-500" size={48} />
+                <div className="text-gray-300 mb-2 font-semibold">אין סרטונים זמינים כרגע</div>
+                <div className="text-sm text-gray-500 mb-4">ניתן להוסיף סרטונים מ-YouTube דרך עמוד הניהול</div>
+                <div className="text-xs text-gray-600">
+                  לדוגמה: https://www.youtube.com/watch?v=VIDEO_ID
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              {videos.map((video, index) => (
+                <div key={video.id} className="group">
                 <div className="relative bg-gray-900 rounded-lg overflow-hidden border border-gray-700 hover:border-brand-green/50 transition-all duration-300">
                   {/* Military-style corner brackets */}
                   <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
@@ -310,7 +324,8 @@ export default function AboutPage() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
 
           {/* Military-style motivational quote */}
           <div className="mt-12 text-center">
