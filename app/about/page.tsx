@@ -197,8 +197,9 @@ export default function AboutPage() {
                 <div className="flex items-start gap-3">
                   <UserCheck className="text-brand-green mt-1" size={20} />
                   <div>
-                    <h4 className="font-semibold">זכר החללים</h4>
-                    <p className="text-gray-400 text-sm">יחס רציני ומחויבות מלאה מול כל חניך, תוך הקפדה על גישה מקצועית ושיטתית</p>
+                    <h4 className="font-semibold">הנצחת החללים
+                    </h4>
+                    <p className="text-gray-400 text-sm">לקיחת ולמידת ערכים של גיבורינו אשר נפלו על הגנת המולדת במלחמת חרבות ברזל</p>
                   </div>
                 </div>
               </div>
@@ -295,26 +296,22 @@ export default function AboutPage() {
             <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {videos.map((video, index) => (
                 <div key={video.id} className="group">
-                <div className="relative bg-gray-900 rounded-lg overflow-hidden border border-gray-700 hover:border-brand-green/50 transition-all duration-300">
-                  {/* Military-style corner brackets */}
-                  <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-                  <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-                  <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-                  <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-brand-green opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-
+                <div className="relative bg-gray-900 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-500 transition-all duration-300">
                   {/* Video iframe */}
                   <div className="aspect-video">
                     <iframe
-                      src={video.url}
+                      src={video.url.includes('youtube.com') || video.url.includes('youtu.be') 
+                        ? `${video.url}${video.url.includes('?') ? '&' : '?'}autoplay=0&mute=0` 
+                        : video.url}
                       title={video.name}
                       className="w-full h-full rounded-lg"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     ></iframe>
                   </div>
                   
-                  {/* Video info overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  {/* Video info overlay - positioned to not interfere with video controls */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                     <div className="text-brand-green text-xs font-mono mb-1">[ VIDEO_{String(index + 1).padStart(2, '0')} ]</div>
                     <h3 className="text-white font-semibold text-sm">{video.name}</h3>
                     {video.description && (

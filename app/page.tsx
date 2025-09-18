@@ -412,7 +412,7 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
-                  <span>תכנית אימונים ברמה גבוהה שיש</span>
+                  <span>תכנית אימונים ברמה הכי גבוהה שיש</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-brand-green rounded-full mt-2"></div>
@@ -550,7 +550,7 @@ export default function HomePage() {
                     className="text-gray-400 hover:text-brand-green transition-colors text-sm flex items-center gap-3"
                   >
                     <Phone size={16} />
-                    050-297-3229
+                    +972502973229
                   </a>
                 </li>
                 <li>
@@ -559,7 +559,7 @@ export default function HomePage() {
                     className="text-gray-400 hover:text-brand-green transition-colors text-sm flex items-center gap-3"
                   >
                     <Mail size={16} />
-                    info@bishvilam.com
+                    bishvilamdnn@gmail.com
                   </a>
                 </li>
                 <li>
@@ -629,12 +629,7 @@ export default function HomePage() {
                 <p>&copy; 2025 בשבילם - מרכז הכשרה לצה״ל. כל הזכויות שמורות.</p>
               </div>
               <div className="flex items-center gap-6 text-xs text-gray-500">
-                <Link href="/privacy" className="hover:text-gray-400 transition-colors">
-                  מדיניות פרטיות
-                </Link>
-                <Link href="/terms" className="hover:text-gray-400 transition-colors">
-                  תנאי שימוש
-                </Link>
+                
                 <span> עוצב ופותח בישראל על ידי גבריאל לוביץ 🇮🇱</span>
               </div>
             </div>
