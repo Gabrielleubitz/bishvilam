@@ -315,9 +315,9 @@ export default function BundleCheckoutPage() {
         detailsMessage += `\n\n⚠️ ${skippedCount} אירועים דולגו:\n${result.skippedEvents.map((se: any) => `• ${se.eventTitle} - ${se.reason}`).join('\n')}`;
       }
       
-      alert(`🎉 ${successMessage}\n\n${detailsMessage}\n\n✉️ נשלח לך מייל אישור עם כל פרטי האירועים בחבילה!`);
+      alert(`🎉 ${successMessage}\n\n${detailsMessage}\n\n✉️ נשלח לך מייל אישור עם כל פרטי האירועים בחבילה!\n\n📧 חשוב: בדוק את תיבת הספאם! לפעמים המייל מגיע לשם.\n\n📱 בדף הבא תוכל לראות את קבוצות הווטסאפ הרלוונטיות לך!`);
 
-      // Redirect to receipt page
+      // Redirect to receipt page  
       router.push(`/bundles/${bundle.id}/receipt?registrationId=${result.bundleRegistrationId}`);
 
     } catch (error: any) {

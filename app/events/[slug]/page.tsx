@@ -528,6 +528,9 @@ export default function EventDetailPage() {
                       <span className="font-semibold">כבר נרשמת!</span>
                     </div>
                     <p className="text-sm text-green-200">רשום בהצלחה לאירוע זה. פרטים נוספים נישלחו למייל.</p>
+                    <div className="mt-2 p-2 bg-yellow-900/30 border border-yellow-500/30 rounded text-xs text-yellow-200">
+                      📧 <strong>חשוב:</strong> בדוק את תיבת הספאם! לפעמים המייל מגיע לשם.
+                    </div>
                     
                     {/* WhatsApp Group Links within registration status */}
                     {userProfile?.groups && userProfile.groups.length > 0 && (

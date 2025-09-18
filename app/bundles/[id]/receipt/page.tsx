@@ -6,6 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase.client';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import WhatsAppGroupLinks from '@/components/WhatsAppGroupLinks';
 import { Bundle, BundleRegistration, Event } from '@/types';
 import { 
   Package, 
@@ -177,6 +178,8 @@ export default function BundleReceiptPage() {
   
   const [receiptData, setReceiptData] = useState<BundleReceiptData | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [showWhatsAppLinks, setShowWhatsAppLinks] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -227,6 +230,18 @@ export default function BundleReceiptPage() {
       }
 
       const bundleData = { id: bundleDoc.id, ...bundleDoc.data() } as Bundle;
+
+      // Load user profile for WhatsApp groups
+      if (currentUser) {
+        try {
+          const userProfileDoc = await getDoc(doc(db, 'profiles', currentUser.uid));
+          if (userProfileDoc.exists()) {
+            setUserProfile({ id: userProfileDoc.id, ...userProfileDoc.data() });
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        }
+      }
 
       // Load all relevant events
       const allEventIds = [
@@ -408,6 +423,18 @@ export default function BundleReceiptPage() {
           </div>
         </div>
       </section>
+
+      {/* WhatsApp Groups */}
+      {userProfile?.groups && showWhatsAppLinks && (
+        <section className="py-6 border-b border-gray-700">
+          <div className="section-container max-w-4xl">
+            <WhatsAppGroupLinks
+              userGroups={userProfile.groups}
+              onClose={() => setShowWhatsAppLinks(false)}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Receipt Details */}
       <section className="py-12">
@@ -685,8 +712,21 @@ export default function BundleReceiptPage() {
                   </Link>
                 </div>
 
+                {/* Spam Folder Warning */}
+                <div className="mt-6 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Mail className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-medium text-yellow-300 mb-1">📧 בדוק את תיבת הספאם!</p>
+                      <p className="text-yellow-200 text-xs">
+                        מיילי אישור לפעמים מגיעים לתיבת הספאם. חפש מיילים מ-bishvilamdnn@gmail.com
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Important Notes */}
-                <div className="mt-6 pt-4 border-t border-gray-700">
+                <div className="mt-4 pt-4 border-t border-gray-700">
                   <h4 className="font-semibold mb-2 text-sm">חשוב לזכור:</h4>
                   <ul className="text-xs text-gray-400 space-y-1">
                     <li>• תקבל אישור במייל לכל אירוע בנפרד</li>
