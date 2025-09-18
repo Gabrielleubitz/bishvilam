@@ -648,10 +648,10 @@ export default function EventDetailPage() {
                 <div className="mt-4 pt-4 border-t border-gray-700">
                   <p className="text-sm text-gray-400 text-center">יש שאלות? צור קשר</p>
                   <div className="flex justify-center gap-4 mt-2">
-                    <a href="tel:0501234567" className="text-blue-400 hover:text-blue-300">
+                    <a href="tel:0502973229" className="text-blue-400 hover:text-blue-300">
                       <Phone size={18} />
                     </a>
-                    <a href="mailto:info@example.com" className="text-blue-400 hover:text-blue-300">
+                    <a href="mailto:bishvilamdnn@gmail.com" className="text-blue-400 hover:text-blue-300">
                       <Mail size={18} />
                     </a>
                   </div>
