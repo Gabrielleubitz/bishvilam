@@ -213,11 +213,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Section Navigation */}
-        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6">
+        <div className="flex flex-col xl:grid xl:grid-cols-4 gap-6">
           {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             {/* Mobile Navigation Toggle */}
-            <div className="lg:hidden mb-4">
+            <div className="xl:hidden mb-4">
               <button
                 onClick={() => setExpandedSections(expandedSections.length === 0 ? ['events', 'users'] : [])}
                 className="w-full btn-outline flex items-center justify-between"
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
               </button>
             </div>
             
-            <div className={`${expandedSections.length === 0 ? 'hidden lg:block' : 'block'}`}>
+            <div className={`${expandedSections.length === 0 ? 'hidden xl:block' : 'block'}`}>
             <div className="bg-gray-800/50 rounded-lg p-4">
               <nav className="space-y-2">
                 {sections.map((section) => (
@@ -324,7 +324,7 @@ export default function AdminDashboard() {
           </div>
           
           {/* Main Content Area */}
-          <div className="lg:col-span-3">
+          <div className="xl:col-span-3">
             <div className="bg-gray-800/30 rounded-lg">
               {/* Content Header */}
               <div className="border-b border-gray-700 p-6 pb-4">
@@ -434,7 +434,7 @@ function OverviewTab({
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {statCards.map((stat, index) => (
           <div key={index} className="card">
             <div className="flex items-center justify-between">

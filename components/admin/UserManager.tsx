@@ -676,7 +676,7 @@ function GroupSelector({ selectedGroups, onSave, onCancel }: {
   return (
     <div className="space-y-3">
       <div className="text-sm font-medium">בחר קבוצות:</div>
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
         {HEBREW_LETTERS.map(letter => (
           <button
             key={letter}
@@ -788,7 +788,7 @@ function BulkGroupManager({ selectedUserIds, onSave, onCancel }: {
           {/* Group Selection */}
           <div>
             <label className="block text-sm font-medium mb-3">בחר קבוצות:</label>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
               {HEBREW_LETTERS.map(letter => (
                 <button
                   key={letter}

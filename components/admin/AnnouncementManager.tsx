@@ -167,7 +167,7 @@ export default function AnnouncementManager() {
     <div className="space-y-6">
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
@@ -597,7 +597,7 @@ function AnnouncementGroupSelector({ selectedGroups = ['ALL'], onChange }: {
       {!isAllGroups && (
         <div>
           <p className="text-sm text-gray-400 mb-3">בחר קבוצות ספציפיות שיקבלו את ההודעה:</p>
-          <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-12 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-2">
             {HEBREW_LETTERS.map(letter => (
               <button
                 key={letter}

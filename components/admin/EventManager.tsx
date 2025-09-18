@@ -330,7 +330,7 @@ export default function EventManager() {
     <div className="space-y-6">
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
@@ -1168,7 +1168,7 @@ function EventGroupSelector({ selectedGroups = ['ALL'], onChange }: {
       {!isAllGroups && (
         <div>
           <p className="text-sm text-gray-400 mb-3">בחר קבוצות ספציפיות שיכולות לראות את האירוע:</p>
-          <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-12 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-2">
             {HEBREW_LETTERS.map(letter => (
               <button
                 key={letter}
