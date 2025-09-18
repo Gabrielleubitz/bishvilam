@@ -353,45 +353,49 @@ export default function EventDetailPage() {
 
       {/* Hero Section */}
       <section className="relative">
-        <div className="aspect-[21/9] bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
+        <div className="aspect-[16/9] sm:aspect-[21/9] bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden min-h-[60vh] sm:min-h-[50vh]">
           {event.cover && (
-            <img src={event.cover} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-50" />
+            <img src={event.cover} alt={event.title} className="absolute inset-0 w-full h-full object-cover object-center opacity-50" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
           
           <div className="absolute bottom-0 left-0 right-0">
-            <div className="section-container py-12">
-              <div className="flex items-center gap-4 mb-4">
-                <h1 className="text-4xl md:text-5xl font-bold">{event.title}</h1>
-                {/* Status Badges */}
-                {isFull && (
-                  <span className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold">🚫 מלא</span>
-                )}
-                {isAlmostFull && !isFull && (
-                  <span className="px-4 py-2 bg-yellow-600 text-white rounded-lg font-bold">⚠️ {availableSpots} נותרו</span>
-                )}
-                {isRegistered && (
-                  <span className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold">✅ רשום</span>
-                )}
-                {needsPayment && (
-                  <span className="px-4 py-2 bg-orange-600 text-white rounded-lg font-bold">💳 ממתין לתשלום</span>
-                )}
+            <div className="section-container py-6 sm:py-12">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight">{event.title}</h1>
+                
+                {/* Status Badges - Stack on mobile */}
+                <div className="flex flex-wrap gap-2">
+                  {isFull && (
+                    <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-600 text-white rounded-lg font-bold text-sm sm:text-base">🚫 מלא</span>
+                  )}
+                  {isAlmostFull && !isFull && (
+                    <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-yellow-600 text-white rounded-lg font-bold text-sm sm:text-base">⚠️ {availableSpots} נותרו</span>
+                  )}
+                  {isRegistered && (
+                    <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg font-bold text-sm sm:text-base">✅ רשום</span>
+                  )}
+                  {needsPayment && (
+                    <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-600 text-white rounded-lg font-bold text-sm sm:text-base">💳 ממתין לתשלום</span>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-6 text-lg">
+              
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-6 text-sm sm:text-lg">
                 <div className="flex items-center gap-2 text-blue-300">
-                  <Calendar size={20} />
-                  <span>{formatEventDate(event.startAt)}</span>
+                  <Calendar size={16} className="sm:w-5 sm:h-5" />
+                  <span className="truncate">{formatEventDate(event.startAt)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-green-300">
-                  <MapPin size={20} />
-                  <span>{event.locationName}</span>
+                  <MapPin size={16} className="sm:w-5 sm:h-5" />
+                  <span className="truncate">{event.locationName}</span>
                 </div>
                 <div className="flex items-center gap-2 text-purple-300">
-                  <DollarSign size={20} />
+                  <DollarSign size={16} className="sm:w-5 sm:h-5" />
                   <span>{event.priceNis === 0 ? 'חינם' : `₪${event.priceNis}`}</span>
                 </div>
                 <div className="flex items-center gap-2 text-orange-300">
-                  <Users size={20} />
+                  <Users size={16} className="sm:w-5 sm:h-5" />
                   <span>{registrationCount}/{event.capacity} נרשמו</span>
                 </div>
               </div>
@@ -401,9 +405,9 @@ export default function EventDetailPage() {
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="section-container">
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Main Content */}
             <div className="lg:col-span-2">
               <div className="prose prose-invert max-w-none">
@@ -501,7 +505,7 @@ export default function EventDetailPage() {
 
             {/* Registration Sidebar */}
             <div>
-              <div className="card sticky top-6">
+              <div className="card lg:sticky lg:top-6">
                 <h3 className="text-xl font-bold mb-4">
                   {isRegistered ? 'רשום לאירוע ✅' : 'הרשמה לאירוע'}
                 </h3>

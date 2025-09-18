@@ -532,7 +532,7 @@ export default function AboutPage() {
               <Phone className="mx-auto mb-4 text-brand-green" size={32} />
               <h3 className="font-semibold mb-2">טלפון</h3>
               <p className="text-gray-300">
-                052-1234567<br />
+                +972502973229<br />
                 זמין: א&apos;-ה&apos; 08:00-20:00<br />
                 שישי: 08:00-14:00
               </p>
@@ -542,8 +542,7 @@ export default function AboutPage() {
               <Mail className="mx-auto mb-4 text-brand-green" size={32} />
               <h3 className="font-semibold mb-2">דוא&quot;ל</h3>
               <p className="text-gray-300">
-                info@kosherkravi.co.il<br />
-                registrations@kosherkravi.co.il<br />
+                bishvilamdnn@gmail.com<br />
                 מענה תוך 24 שעות
               </p>
             </div>
