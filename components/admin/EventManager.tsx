@@ -430,33 +430,35 @@ export default function EventManager() {
         ) : (
           events.map((event) => (
             <div key={event.id} className="card">
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-3 mb-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
                     <h3 className="text-xl font-semibold">{event.title}</h3>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      event.publish 
-                        ? 'bg-green-900/50 text-green-300 border border-green-500/30' 
-                        : 'bg-gray-700 text-gray-300 border border-gray-600'
-                    }`}>
-                      {event.publish ? '✅ פורסם באתר' : '❌ טיוטה'}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        event.publish 
+                          ? 'bg-green-900/50 text-green-300 border border-green-500/30' 
+                          : 'bg-gray-700 text-gray-300 border border-gray-600'
+                      }`}>
+                        {event.publish ? '✅ פורסם באתר' : '❌ טיוטה'}
+                      </span>
                     
-                    {/* Event Status Badge */}
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      event.status === 'completed' 
-                        ? 'bg-blue-900/50 text-blue-300 border border-blue-500/30'
-                        : event.status === 'cancelled'
-                        ? 'bg-red-900/50 text-red-300 border border-red-500/30'
-                        : event.status === 'draft'
-                        ? 'bg-gray-700 text-gray-300 border border-gray-600'
-                        : 'bg-green-900/50 text-green-300 border border-green-500/30'
-                    }`}>
-                      {event.status === 'completed' && '✅ הושלם'}
-                      {event.status === 'cancelled' && '❌ בוטל'}
-                      {event.status === 'draft' && '📝 טיוטה'}
-                      {(!event.status || event.status === 'active') && '🎯 פעיל'}
-                    </span>
+                      {/* Event Status Badge */}
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        event.status === 'completed' 
+                          ? 'bg-blue-900/50 text-blue-300 border border-blue-500/30'
+                          : event.status === 'cancelled'
+                          ? 'bg-red-900/50 text-red-300 border border-red-500/30'
+                          : event.status === 'draft'
+                          ? 'bg-gray-700 text-gray-300 border border-gray-600'
+                          : 'bg-green-900/50 text-green-300 border border-green-500/30'
+                      }`}>
+                        {event.status === 'completed' && '✅ הושלם'}
+                        {event.status === 'cancelled' && '❌ בוטל'}
+                        {event.status === 'draft' && '📝 טיוטה'}
+                        {(!event.status || event.status === 'active') && '🎯 פעיל'}
+                      </span>
+                    </div>
                     
                     {/* Registration Status Badge */}
                     {event.registeredCount > 0 && (
@@ -508,11 +510,11 @@ export default function EventManager() {
                 </div>
                 
                 <div className="flex flex-col gap-3">
-                  {/* Primary Actions Row */}
-                  <div className="flex flex-wrap items-center gap-2 justify-end">
+                  {/* Primary Actions Row - Stack on mobile */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:justify-end">
                     <button
                       onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
-                      className="btn-outline text-sm px-3 py-1.5 flex items-center gap-2"
+                      className="btn-outline text-sm px-3 py-1.5 flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
                       {expandedEvent === event.id ? (
                         <>
@@ -529,7 +531,7 @@ export default function EventManager() {
 
                     <button
                       onClick={() => setEditingEvent(event)}
-                      className="btn text-sm px-3 py-1.5 flex items-center gap-2"
+                      className="btn text-sm px-3 py-1.5 flex items-center justify-center gap-2 w-full sm:w-auto"
                       disabled={!currentUser}
                     >
                       <Edit size={16} />
@@ -537,9 +539,9 @@ export default function EventManager() {
                     </button>
                   </div>
 
-                  {/* Secondary Actions Row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
+                  {/* Secondary Actions Row - Stack everything on mobile */}
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                       {/* Publishing Controls */}
                       <div className="flex items-center gap-1 bg-gray-800/50 rounded-md p-1">
                         <button
@@ -593,7 +595,7 @@ export default function EventManager() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-end">
                       {/* Status Control Dropdown */}
                       <div className="relative group">
                         <button
