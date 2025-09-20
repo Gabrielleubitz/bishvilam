@@ -479,6 +479,56 @@ export default function BundleReceiptPage() {
                 </div>
               </div>
 
+              {/* Payment Instructions */}
+              {registration.paymentStatus === 'pending' && (
+                <div className="card bg-orange-900/20 border border-orange-500/30">
+                  <div className="flex items-center gap-2 text-orange-300 mb-4">
+                    <CreditCard size={20} />
+                    <span className="font-semibold text-lg">נדרש תשלום ₪{bundle.priceNis}</span>
+                  </div>
+                  
+                  <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-white mb-3">🏧 פרטי תשלום:</h4>
+                    
+                    <div className="space-y-3 text-sm">
+                      {/* Bank Transfer */}
+                      <div className="border-b border-gray-600 pb-3">
+                        <div className="font-medium text-blue-300 mb-2">💳 העברה בנקאית</div>
+                        <div className="text-gray-300 space-y-1">
+                          <div><strong>בנק דיסקונט</strong></div>
+                          <div><strong>סניף:</strong> 535</div>
+                          <div><strong>מספר חשבון:</strong> 250445184</div>
+                        </div>
+                      </div>
+                      
+                      {/* Digital Payment */}
+                      <div>
+                        <div className="font-medium text-green-300 mb-2">📱 תשלום דיגיטלי</div>
+                        <div className="text-gray-300 space-y-1">
+                          <div><strong>ביט:</strong> 0542289567</div>
+                          <div><strong>פייבוקס:</strong> 0542289567</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-yellow-200">
+                        <p className="font-medium mb-2">חשוב לאחר התשלום:</p>
+                        <ul className="space-y-1 text-xs">
+                          <li>• שלח צילום מסך של התשלום למייל: <strong>bishvilamdnn@gmail.com</strong></li>
+                          <li>• ציין במייל את שם החבילה ומספר ההזמנה: <strong>{registration.id}</strong></li>
+                          <li>• לחילופין, שלח לוואטסאפ 0542289567</li>
+                          <li>• אישור התשלום יתקבל תוך 24 שעות</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Registered Events */}
               {registeredEvents.length > 0 && (
                 <div className="card">

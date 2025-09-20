@@ -361,8 +361,7 @@ export default function BundleCheckoutPage() {
     );
   }
 
-  const serviceFee = Math.round(bundle.priceNis * 0.03); // 3% service fee
-  const totalAmount = bundle.priceNis + serviceFee;
+  const totalAmount = bundle.priceNis; // No service fee for manual payment
   
   let isExpiringSoon = false;
   if (bundle.validUntil) {
@@ -681,12 +680,12 @@ export default function BundleCheckoutPage() {
                     {processing ? (
                       <div className="flex items-center justify-center gap-2">
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                        מעבד רכישה...
+                        מעבד הרשמה...
                       </div>
                     ) : (
                       <div className="flex items-center justify-center gap-2">
-                        <CreditCard size={20} />
-                        רכוש חבילה - ₪{totalAmount}
+                        <Package size={20} />
+                        הירשם לחבילה - ₪{bundle.priceNis}
                       </div>
                     )}
                   </button>
@@ -782,10 +781,6 @@ export default function BundleCheckoutPage() {
                     <span>חיסכון:</span>
                     <span>₪{bundle.savings}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">עמלת שירות:</span>
-                    <span>₪{serviceFee}</span>
-                  </div>
                   <div className="border-t border-gray-700 pt-3">
                     <div className="flex justify-between text-lg font-bold">
                       <span>סה&quot;כ לתשלום:</span>
@@ -794,14 +789,14 @@ export default function BundleCheckoutPage() {
                   </div>
                 </div>
 
-                {/* Security Info */}
-                <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
-                  <div className="flex items-center gap-2 text-green-400 mb-2">
-                    <Shield size={16} />
-                    <span className="text-sm font-medium">רכישה מאובטחת</span>
+                {/* Payment Info */}
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2 text-blue-400 mb-2">
+                    <CreditCard size={16} />
+                    <span className="text-sm font-medium">תשלום ידני</span>
                   </div>
-                  <p className="text-xs text-gray-400">
-                    כל הנתונים מוצפנים ומאובטחים. תקבל אישור במייל לאחר הרכישה.
+                  <p className="text-xs text-blue-200">
+                    לאחר ההרשמה תקבל הוראות תשלום והכנה. התשלום יאושר ידנית תוך 24 שעות.
                   </p>
                 </div>
 

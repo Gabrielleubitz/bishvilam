@@ -281,13 +281,6 @@ export default function EventDetailPage() {
     }
   };
 
-  const handlePayNow = () => {
-    if (!event || !userRegistration) return;
-    
-    // Navigate to payment page with event and registration data
-    const paymentUrl = `/payment?eventId=${event.id}&registrationId=${userRegistration.id}`;
-    router.push(paymentUrl);
-  };
 
   const addToCalendar = () => {
     if (!event) return;
@@ -546,11 +539,40 @@ export default function EventDetailPage() {
 
                 {needsPayment && (
                   <div className="bg-orange-900/30 border border-orange-500/30 rounded-lg p-4 mb-4">
-                    <div className="flex items-center gap-2 text-orange-300 mb-2">
+                    <div className="flex items-center gap-2 text-orange-300 mb-3">
                       <CreditCard size={20} />
-                      <span className="font-semibold">נדרש תשלום</span>
+                      <span className="font-semibold">נדרש תשלום ₪{event.priceNis}</span>
                     </div>
-                    <p className="text-sm text-orange-200">ההרשמה התקבלה! יש לבצע תשלום כדי לאשר את המקום.</p>
+                    <p className="text-sm text-orange-200 mb-4">ההרשמה התקבלה! יש לבצע תשלום כדי לאשר את המקום.</p>
+                    
+                    <div className="bg-gray-800/50 rounded-lg p-4">
+                      <h4 className="font-semibold text-white mb-3">🏧 פרטי תשלום:</h4>
+                      
+                      <div className="space-y-3 text-sm">
+                        {/* Bank Transfer */}
+                        <div className="border-b border-gray-600 pb-3">
+                          <div className="font-medium text-blue-300 mb-2">💳 העברה בנקאית</div>
+                          <div className="text-gray-300 space-y-1">
+                            <div>בנק דיסקונט</div>
+                            <div>סניף: 535</div>
+                            <div>מספר חשבון: 250445184</div>
+                          </div>
+                        </div>
+                        
+                        {/* Digital Payment */}
+                        <div>
+                          <div className="font-medium text-green-300 mb-2">📱 תשלום דיגיטלי</div>
+                          <div className="text-gray-300 space-y-1">
+                            <div><strong>ביט:</strong> 0542289567</div>
+                            <div><strong>פייבוקס:</strong> 0542289567</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-yellow-900/30 border border-yellow-500/30 rounded text-xs text-yellow-200">
+                        <strong>חשוב:</strong> לאחר התשלום, שלח צילום מסך למייל bishvilamdnn@gmail.com או וואטסאפ עם פרטי האירוע
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -598,18 +620,6 @@ export default function EventDetailPage() {
                   </div>
                 </div>
 
-                {/* Payment Button */}
-                {needsPayment && (
-                  <button
-                    onClick={handlePayNow}
-                    className="btn w-full text-center mb-4 bg-orange-600 hover:bg-orange-700 border-orange-600"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <CreditCard size={18} />
-                      שלם עכשיו ₪{event.priceNis}
-                    </div>
-                  </button>
-                )}
 
                 {/* Registration Button */}
                 {!isRegistered && (
