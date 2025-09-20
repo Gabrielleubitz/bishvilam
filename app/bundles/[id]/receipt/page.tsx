@@ -22,7 +22,8 @@ import {
   Mail,
   X,
   RefreshCcw,
-  Clock
+  Clock,
+  CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
 
