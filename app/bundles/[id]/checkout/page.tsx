@@ -28,7 +28,6 @@ import Link from 'next/link';
 interface BundleWithEvents extends Bundle {
   events: Event[];
   originalPrice: number;
-  savings: number;
 }
 
 interface CheckoutForm {
@@ -243,15 +242,13 @@ export default function BundleCheckoutPage() {
       }
 
       // Calculate pricing
-      const originalPrice = bundleEvents.reduce((sum, event) => sum + event.priceNis, 0);
-      const savings = originalPrice - bundleData.priceNis;
+      const originalPrice = bundleEvents.reduce((sum, event) => sum + (event.priceNis || 0), 0);
 
       console.log('💾 Setting bundle state...');
       setBundle({
         ...bundleData,
         events: bundleEvents,
-        originalPrice,
-        savings
+        originalPrice
       });
 
       console.log('✅ Bundle loading completed successfully');
@@ -705,17 +702,6 @@ export default function BundleCheckoutPage() {
                   <h4 className="font-semibold text-lg mb-2">{bundle.title}</h4>
                   <p className="text-gray-300 text-sm mb-4">{bundle.description}</p>
                   
-                  {/* Savings Highlight */}
-                  {bundle.savings > 0 && (
-                    <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Gift className="text-green-400" size={16} />
-                        <span className="text-green-400 font-medium">
-                          חיסכון: ₪{bundle.savings} ({Math.round((bundle.savings / bundle.originalPrice) * 100)}%)
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Events List */}
@@ -776,10 +762,6 @@ export default function BundleCheckoutPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">מחיר חבילה:</span>
                     <span>₪{bundle.priceNis}</span>
-                  </div>
-                  <div className="flex justify-between text-green-400">
-                    <span>חיסכון:</span>
-                    <span>₪{bundle.savings}</span>
                   </div>
                   <div className="border-t border-gray-700 pt-3">
                     <div className="flex justify-between text-lg font-bold">
