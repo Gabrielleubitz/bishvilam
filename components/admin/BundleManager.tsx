@@ -46,10 +46,24 @@ export default function BundleManager() {
 
       // Load bundles
       const bundlesSnapshot = await getDocs(collection(db, 'bundles'));
-      const bundlesData = bundlesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Bundle[];
+      const bundlesData = bundlesSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Ensure required fields have proper defaults
+          title: data.title || '',
+          description: data.description || '',
+          priceNis: Number(data.priceNis) || 0,
+          eventIds: Array.isArray(data.eventIds) ? data.eventIds : [],
+          replacementEventIds: Array.isArray(data.replacementEventIds) ? data.replacementEventIds : [],
+          publish: Boolean(data.publish),
+          status: data.status || 'draft',
+          createdAt: data.createdAt || new Date(),
+          createdBy: data.createdBy || '',
+          updatedAt: data.updatedAt || null
+        };
+      }) as Bundle[];
 
       // Load bundle registrations
       const bundleRegistrationsSnapshot = await getDocs(collection(db, 'bundleRegistrations'));
@@ -445,7 +459,15 @@ export default function BundleManager() {
                       )}
                     </button>
                     <button
-                      onClick={() => setEditingBundle(bundle)}
+                      onClick={() => {
+                        try {
+                          console.log('Editing bundle:', bundle);
+                          setEditingBundle(bundle);
+                        } catch (error) {
+                          console.error('Error setting bundle for editing:', error);
+                          alert('שגיאה בפתיחת טופס העריכה: ' + (error as any).message);
+                        }
+                      }}
                       className="btn text-sm px-3 py-1.5 flex items-center gap-2"
                       disabled={!currentUser}
                     >
@@ -591,15 +613,46 @@ function BundleForm({ bundle, events, currentUser, onCancel, onSuccess }: {
   onCancel: () => void;
   onSuccess: () => void;
 }) {
-  const [formData, setFormData] = useState({
-    title: bundle?.title || '',
-    description: bundle?.description || '',
-    priceNis: bundle?.priceNis || 0,
-    eventIds: bundle?.eventIds || [],
-    replacementEventIds: bundle?.replacementEventIds || [],
-    publish: bundle?.publish ?? false,
-    status: bundle?.status || 'draft',
-    validUntil: bundle?.validUntil ? new Date(bundle.validUntil).toISOString().split('T')[0] : ''
+  const [formData, setFormData] = useState(() => {
+    try {
+      console.log('Initializing form with bundle:', bundle);
+      
+      return {
+        title: bundle?.title || '',
+        description: bundle?.description || '',
+        priceNis: Number(bundle?.priceNis) || 0,
+        eventIds: Array.isArray(bundle?.eventIds) ? bundle.eventIds : [],
+        replacementEventIds: Array.isArray(bundle?.replacementEventIds) ? bundle.replacementEventIds : [],
+        publish: Boolean(bundle?.publish ?? false),
+        status: bundle?.status || 'draft',
+        validUntil: bundle?.validUntil ? 
+          (() => {
+            try {
+              const date = bundle.validUntil instanceof Date ? bundle.validUntil : 
+                          (bundle.validUntil as any)?.toDate ? (bundle.validUntil as any).toDate() : 
+                          new Date(bundle.validUntil);
+              return date.toISOString().split('T')[0];
+            } catch (error) {
+              console.warn('Invalid date format for validUntil:', bundle.validUntil);
+              return '';
+            }
+          })() : ''
+      };
+    } catch (error) {
+      console.error('Error initializing bundle form:', error);
+      alert('שגיאה בטעינת נתוני החבילה: ' + (error as any).message);
+      onCancel();
+      return {
+        title: '',
+        description: '',
+        priceNis: 0,
+        eventIds: [],
+        replacementEventIds: [],
+        publish: false,
+        status: 'draft' as 'active' | 'draft' | 'expired',
+        validUntil: ''
+      };
+    }
   });
   const [loading, setLoading] = useState(false);
 
